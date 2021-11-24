@@ -1,0 +1,16 @@
+.idea/
+# .vscode/
+# dist/
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+node_modules/
+*.tsbuildinfo
+.npm
+.eslintcache
+.yarn-integrity
+.env
+.env.test
+report.*.json
