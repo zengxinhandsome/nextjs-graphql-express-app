@@ -1,6 +1,7 @@
 import { Resolver, Mutation, Arg, InputType, Ctx, Field, Query } from "type-graphql";
 import { User } from "../entities/User";
 import { MyContext } from "../types";
+import argon2 from 'argon2';
 
 @InputType()
 class UsernamePasswordInput {
@@ -23,7 +24,7 @@ export class UserResolve {
     @Ctx() { em }: MyContext
   ) {
     const user = await em.create(User, { username: options.username, password: options.password });
-    em.persistAndFlush(user);
+    await em.persistAndFlush(user);
     return user;
   }
 }

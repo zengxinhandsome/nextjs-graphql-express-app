@@ -44,7 +44,7 @@ let UserResolve = class UserResolve {
     register(options, { em }) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield em.create(User_1.User, { username: options.username, password: options.password });
-            em.persistAndFlush(user);
+            yield em.persistAndFlush(user);
             return user;
         });
     }
