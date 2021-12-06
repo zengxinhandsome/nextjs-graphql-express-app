@@ -22,6 +22,7 @@ const type_graphql_1 = require("type-graphql");
 const ioredis_1 = __importDefault(require("ioredis"));
 const connect_redis_1 = __importDefault(require("connect-redis"));
 const express_session_1 = __importDefault(require("express-session"));
+const cors_1 = __importDefault(require("cors"));
 const constants_1 = require("./constants");
 // import { Post } from './entities/Post';
 const mikro_orm_config_1 = __importDefault(require("./mikro-orm.config"));
@@ -38,6 +39,10 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const httpServer = http_1.default.createServer(app);
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
     const redis = new ioredis_1.default(process.env.REDIS_URL);
+    app.use((0, cors_1.default)({
+        origin: process.env.CORS_ORIGIN,
+        credentials: true
+    }));
     app.use((0, express_session_1.default)({
         name: 'qid',
         store: new RedisStore({
@@ -59,18 +64,28 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             resolvers: [hello_1.HelloResolve, post_1.PostResolve, user_1.UserResolve],
             validate: false
         }),
+        formatResponse: (response, query) => {
+            // const operationName = query.request.operationName
+            return response;
+            // return {
+            //   data: response?.data && operationName && response?.data[operationName] || null
+            // }
+        },
         plugins: [
             (0, apollo_server_core_1.ApolloServerPluginDrainHttpServer)({ httpServer }),
             (0, apollo_server_core_1.ApolloServerPluginLandingPageGraphQLPlayground)()
         ],
-        context: ({ req, res }) => ({ em: orm.em, req, res })
+        context: ({ req, res }) => {
+            return ({ em: orm.em, req, res });
+        }
     });
     yield apolloServer.start();
     apolloServer.applyMiddleware({
         app,
-        cors: {
-            credentials: true,
-        },
+        cors: false
+        // cors: {
+        //   credentials: true,
+        // },
     });
     httpServer.listen({ port: 4000 }, () => {
         console.log(`🚀 Server ready at http://localhost:4000${apolloServer.graphqlPath}`);

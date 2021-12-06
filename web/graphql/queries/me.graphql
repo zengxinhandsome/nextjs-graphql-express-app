@@ -1,0 +1,10 @@
+query Me {
+  me {
+    code
+    message
+    data {
+      id
+      username
+    }
+  }
+}

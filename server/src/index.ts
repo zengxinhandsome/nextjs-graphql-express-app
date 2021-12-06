@@ -8,6 +8,7 @@ import { buildSchema } from 'type-graphql';
 import Redis from "ioredis";
 import connectRedis from 'connect-redis';
 import session from 'express-session';
+import cors from 'cors';
 
 import { __prod__ } from './constants';
 // import { Post } from './entities/Post';
@@ -24,12 +25,16 @@ const main = async () => {
   // const posts = await orm.em.find(Post, {});
 
   const app = express();
-  
+
   const httpServer = http.createServer(app);
 
   const RedisStore = connectRedis(session)
   const redis = new Redis(process.env.REDIS_URL);
 
+  app.use(cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true
+  }));
   app.use(
     session({
       name: 'qid',
@@ -54,19 +59,29 @@ const main = async () => {
       resolvers: [HelloResolve, PostResolve, UserResolve],
       validate: false
     }),
+    formatResponse: (response, query) => {
+      // const operationName = query.request.operationName
+      return response;
+      // return {
+      //   data: response?.data && operationName && response?.data[operationName] || null
+      // }
+    },
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
       ApolloServerPluginLandingPageGraphQLPlayground()
     ],
-    context: ({ req, res }) => ({ em: orm.em, req, res })
+    context: ({ req, res }) => {
+      return ({ em: orm.em, req, res })
+    }
   });
 
   await apolloServer.start();
   apolloServer.applyMiddleware({
     app,
-    cors: {
-      credentials: true,
-    },
+    cors: false
+    // cors: {
+    //   credentials: true,
+    // },
   });
 
   httpServer.listen({ port: 4000 }, () => {

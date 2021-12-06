@@ -9,25 +9,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HelloResolve = void 0;
+exports.HelloResponse = void 0;
 const type_graphql_1 = require("type-graphql");
-const hello_1 = require("../types/hello");
-let HelloResolve = class HelloResolve {
-    hello() {
-        return {
-            code: 0,
-            message: 'success',
-            data: 'hello world'
-        };
-    }
+const index_1 = require("../types/index");
+let HelloResponse = class HelloResponse extends index_1.ResponseType {
 };
 __decorate([
-    (0, type_graphql_1.Query)(() => hello_1.HelloResponse),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", hello_1.HelloResponse)
-], HelloResolve.prototype, "hello", null);
-HelloResolve = __decorate([
-    (0, type_graphql_1.Resolver)()
-], HelloResolve);
-exports.HelloResolve = HelloResolve;
+    (0, type_graphql_1.Field)({ nullable: true, defaultValue: null }),
+    __metadata("design:type", String)
+], HelloResponse.prototype, "data", void 0);
+HelloResponse = __decorate([
+    (0, type_graphql_1.ObjectType)()
+], HelloResponse);
+exports.HelloResponse = HelloResponse;

@@ -1,9 +1,14 @@
 import { Resolver, Query } from "type-graphql";
+import { HelloResponse } from "../types/hello";
 
 @Resolver()
 export class HelloResolve {
-  @Query(() => String)
-  hello () {
-    return "hello hhh1212"
+  @Query(() => HelloResponse)
+  hello (): HelloResponse {
+    return {
+      code: 0,
+      message: 'success',
+      data: 'hello world'
+    }
   }
 }

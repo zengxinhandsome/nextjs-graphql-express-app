@@ -1,7 +1,10 @@
 import { Resolver, Mutation, Arg, InputType, Ctx, Field, Query, ObjectType } from "type-graphql";
-import { User } from "../entities/User";
-import { MyContext } from "../types";
 import argon2 from 'argon2';
+import { User } from "../entities/User";
+import { MyContext, ResponseType } from "../types";
+import { deleteUserResponse, loginResponse, logoutResponse, MeResponse, registerResponse, UsersResponse } from "../types/user";
+import { MikroORM } from "@mikro-orm/core";
+import { COOKIE_NAME } from "../constants";
 
 @InputType()
 class UsernamePasswordInput {
@@ -30,71 +33,146 @@ class LoginResponse {
 
 @Resolver()
 export class UserResolve {
-  @Query(() => User, { nullable: true })
-  async me (@Ctx() { em, req }: MyContext): Promise<User | null> {
-    if (!req.session.userId) {
-      return null;
-    }
+  @Query(() => MeResponse)
+  async me (@Ctx() { em, req }: MyContext): Promise<MeResponse> {
     const user = await em.findOne(User, { id: req.session.userId });
-    return user;
+    if (!user) {
+      return {
+        code: 1,
+        message: '当前未登录'
+      };
+    }
+    return {
+      code: 0,
+      message: 'success',
+      data: user
+    };
   }
 
-  @Query(() => [User])
-  users (@Ctx() { em }: MyContext): Promise<User[]> {
-    return em.find(User, {})
+  @Query(() => UsersResponse)
+  async users (@Ctx() { em }: MyContext): Promise<UsersResponse> {
+    const users = await em.find(User, {});
+    return {
+      code: 0,
+      message: 'success',
+      data: users
+    }
   }
 
-  @Mutation(() => User)
+  @Mutation(() => registerResponse)
   async register (
     @Arg('options') options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
-  ) {
-    const user = await em.create(User, {
-      username: options.username,
-      password: await argon2.hash(options.password)
-    });
-    await em.persistAndFlush(user);
-    return user;
+    @Ctx() { em, req }: MyContext
+  ): Promise<registerResponse> {
+    const user = await em.findOne(User, { username: options.username });
+    if (!user) {
+      if (options.username.length < 5) {
+        return {
+          code: 1,
+          message: '用户名不得少于五位'
+        }
+      }
+      if (options.password.length < 5) {
+        return {
+          code: 1,
+          message: '密码不得少于五位'
+        }
+      }
+      const newUser = await em.create(User, {
+        username: options.username,
+        password: await argon2.hash(options.password)
+      });
+
+      await em.persistAndFlush(newUser);
+
+      const userInfo = await em.findOne(User, { username: newUser.username });
+
+      if (userInfo) {
+        req.session.userId = userInfo.id;
+      }
+
+      return {
+        code: 0,
+        message: 'success',
+        data: newUser
+      };
+    }
+    return {
+      code: 1,
+      message: '该用户已存在'
+    };
   }
 
-  @Mutation(() => LoginResponse)
+
+  @Mutation(() => deleteUserResponse)
+  async deleteUser (
+    @Arg('username') username: string,
+    @Ctx() { em, req, res }: MyContext
+  ): Promise<deleteUserResponse> {
+    const user = await em.findOne(User, { username });
+    if (!user) {
+      return {
+        code: 1,
+        message: '该用户不存在'
+      };
+    }
+    await em.removeAndFlush(user);
+    // req.session.destroy(err => {
+    //   res.clearCookie('qid');
+    // });
+    return {
+      message: '删除成功'
+    }
+  }
+
+  @Mutation(() => loginResponse)
   async login (
     @Arg('options') options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
-  ): Promise<LoginResponse | undefined> {
+  ): Promise<loginResponse> {
     const user = await em.findOne(User, { username: options.username });
 
     if (!user) {
       return {
-        errorList: [
-          {
-            field: 'username',
-            message: '找不到此用户'
-          }
-        ]
+        code: 1,
+        message: '找不到此用户'
       }
     }
     const isPasswordValid = await argon2.verify(user.password, options.password);
     if (!isPasswordValid) {
       return {
-        errorList: [
-          {
-            field: 'password',
-            message: '密码错误'
-          }
-        ]
+        code: 1,
+        message: '密码错误'
       }
     }
 
-    try {
-      req.session.userId = user.id;
-    } catch (error) {
-      console.log('error: ', error);
-    }
+    req.session.userId = user.id;
 
     return {
-      user
+      code: 0,
+      message: 'success',
+      data: user
     };
   }
 
+  @Mutation(() => logoutResponse)
+  async logout (
+    @Ctx() { req, res }: MyContext
+  ): Promise<logoutResponse> {
+    return await new Promise(resolve => {
+      req.session.destroy(err => {
+        res.clearCookie(COOKIE_NAME)
+        if (err) {
+          resolve({
+            code: 1,
+            message: err
+          })
+        }
+        resolve({
+          message: 'success',
+          code: 0
+        })
+      });
+    })
+  }
 }

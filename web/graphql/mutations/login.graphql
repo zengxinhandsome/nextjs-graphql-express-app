@@ -1,0 +1,11 @@
+mutation Login($username: String!, $password: String!) {
+  login(options: { username: $username, password: $password }) {
+    code
+    message
+    data {
+      id
+      createdAt
+      username
+    }
+  }
+}
