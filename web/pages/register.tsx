@@ -1,20 +1,21 @@
 import { useRouter } from 'next/router';
 import { Form, Input, Button, Checkbox, message } from 'antd';
 import { useRegisterMutation } from '../generated/graphql';
+import { withUrqlClient } from 'next-urql';
+import { createUrqlClient } from '../utils/createUrqlClient';
 
 const Register = () => {
   const router = useRouter();
   const [, register] = useRegisterMutation();
   const onFinish = (values: any) => {
-    console.log('Success:', values);
-    register(values).then(({ data }) => {
-      const response = data?.register
-      if (response?.code === 0) {
+    register(values).then((registerRes) => {
+      const data = registerRes.data?.register;
+      if (data?.code === 0) {
         message.success('注册成功');
         router.push('/');
         return;
       }
-      message.error(response?.message);
+      message.error(data?.message);
     });
   };
 
@@ -64,4 +65,4 @@ const Register = () => {
   );
 };
 
-export default Register
+export default withUrqlClient(createUrqlClient)(Register);

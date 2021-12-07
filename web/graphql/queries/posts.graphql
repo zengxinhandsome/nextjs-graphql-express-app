@@ -1,0 +1,12 @@
+query Posts {
+  posts {
+    code
+    message
+    data {
+      id
+      title
+      createdAt
+      updatedAt
+    }
+  }
+}

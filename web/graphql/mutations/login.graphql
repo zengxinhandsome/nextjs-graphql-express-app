@@ -3,9 +3,8 @@ mutation Login($username: String!, $password: String!) {
     code
     message
     data {
-      id
       createdAt
-      username
+      ...RegularUser
     }
   }
 }

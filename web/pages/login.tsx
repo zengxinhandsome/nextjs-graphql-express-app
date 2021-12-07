@@ -1,6 +1,8 @@
 import { useRouter } from 'next/router';
-import { Form, Input, Button, Checkbox, message } from 'antd';
+import { withUrqlClient } from 'next-urql';
+import { Form, Input, Button, message } from 'antd';
 import { useLoginMutation } from '../generated/graphql';
+import { createUrqlClient } from '../utils/createUrqlClient';
 
 const Login = () => {
   const router = useRouter();
@@ -64,4 +66,4 @@ const Login = () => {
   );
 };
 
-export default Login
+export default withUrqlClient(createUrqlClient)(Login);

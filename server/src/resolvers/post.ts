@@ -3,6 +3,8 @@ import { Post } from "../entities/Post";
 import { MyContext, ResponseType } from "../types";
 import { createPostResponse, deletePostResponse, getPostResponse, postResponse, updatePostResponse } from "../types/post";
 
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 @Resolver()
 export class PostResolve {
   @Query(() => postResponse)

@@ -1,40 +1,24 @@
 import type { NextPage } from 'next'
-import styles from '../styles/Home.module.css'
-import { useLogoutMutation, useMeQuery } from '../generated/graphql'
-import { useEffect } from 'react'
-import { Spin, Button, message } from 'antd'
-import { useRouter } from 'next/router'
+import { withUrqlClient } from 'next-urql'
+import NavBar from '../components/navbar'
+import { usePostsQuery } from '../generated/graphql'
+import { createUrqlClient } from '../utils/createUrqlClient'
 
 const Home: NextPage = () => {
-  console.log('home page');
+  const [{ data: postsRes, fetching: fetchingPosts }] = usePostsQuery();
 
-  const router = useRouter();
-  const [{ data, fetching }, getUserInfo] = useMeQuery();
-
-
-  const [, logout] = useLogoutMutation();
-  const response = data?.me;
-  const userName = response?.data?.username || 'not login';
-
-  const handleLogout = () => {
-    logout().then(res => {
-      if (res.data?.logout.code === 0) {
-        message.success('退出登录成功');
-        getUserInfo({ requestPolicy: 'network-only' });
-      }
-    })
-  }
+  const posts = postsRes?.posts.data || [];
 
   return (
-    <Spin spinning={fetching}>
-      <div className={styles.wrapper}>
-        <h1>
-          {userName}
-          <Button onClick={handleLogout}>退出登录</Button>
-        </h1>
-      </div>
-    </Spin>
+    <>
+      <NavBar />
+      {
+        fetchingPosts ? 'loading' : (
+          posts.map(p => <div key={p.id}>{p.title}</div>)
+        )
+      }
+    </>
   )
 }
 
-export default Home
+export default withUrqlClient(createUrqlClient, { ssr: true })(Home);

@@ -3,8 +3,7 @@ query Me {
     code
     message
     data {
-      id
-      username
+      ...RegularUser
     }
   }
 }

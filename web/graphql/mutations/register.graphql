@@ -3,8 +3,7 @@ mutation Register ($username: String!, $password: String!) {
     code
     message
     data {
-      id
-      username
+      ...RegularUser
     }
   }
 }

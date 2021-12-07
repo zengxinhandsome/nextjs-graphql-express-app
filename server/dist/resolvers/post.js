@@ -25,6 +25,7 @@ exports.PostResolve = void 0;
 const type_graphql_1 = require("type-graphql");
 const Post_1 = require("../entities/Post");
 const post_1 = require("../types/post");
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 let PostResolve = class PostResolve {
     posts({ em }) {
         return __awaiter(this, void 0, void 0, function* () {
