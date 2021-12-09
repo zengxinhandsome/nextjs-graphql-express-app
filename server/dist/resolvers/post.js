@@ -99,14 +99,14 @@ let PostResolve = class PostResolve {
     }
 };
 __decorate([
-    (0, type_graphql_1.Query)(() => post_1.postResponse),
+    (0, type_graphql_1.Query)(() => post_1.PostsRes),
     __param(0, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], PostResolve.prototype, "posts", null);
 __decorate([
-    (0, type_graphql_1.Query)(() => post_1.getPostResponse),
+    (0, type_graphql_1.Query)(() => post_1.PostRes),
     __param(0, (0, type_graphql_1.Arg)("id", () => type_graphql_1.Int)),
     __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
@@ -114,7 +114,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostResolve.prototype, "getPost", null);
 __decorate([
-    (0, type_graphql_1.Mutation)(() => post_1.createPostResponse),
+    (0, type_graphql_1.Mutation)(() => post_1.PostRes),
     __param(0, (0, type_graphql_1.Arg)("title", () => String)),
     __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
@@ -122,7 +122,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostResolve.prototype, "createPost", null);
 __decorate([
-    (0, type_graphql_1.Mutation)(() => post_1.updatePostResponse),
+    (0, type_graphql_1.Mutation)(() => post_1.PostRes),
     __param(0, (0, type_graphql_1.Arg)("id", () => type_graphql_1.Int, { nullable: false })),
     __param(1, (0, type_graphql_1.Arg)("title", () => String, { nullable: true })),
     __param(2, (0, type_graphql_1.Ctx)()),
@@ -131,7 +131,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostResolve.prototype, "updatePost", null);
 __decorate([
-    (0, type_graphql_1.Mutation)(() => post_1.deletePostResponse),
+    (0, type_graphql_1.Mutation)(() => post_1.PostRes),
     __param(0, (0, type_graphql_1.Arg)("id", () => type_graphql_1.Int)),
     __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),

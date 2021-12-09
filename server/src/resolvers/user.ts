@@ -1,40 +1,114 @@
-import { Resolver, Mutation, Arg, InputType, Ctx, Field, Query, ObjectType } from "type-graphql";
+import { Resolver, Mutation, Arg, InputType, Ctx, Field, Query, ObjectType, Int } from "type-graphql";
 import argon2 from 'argon2';
+import { v4 as uuidv4 } from 'uuid';
 import { User } from "../entities/User";
-import { MyContext, ResponseType } from "../types";
-import { deleteUserResponse, loginResponse, logoutResponse, MeResponse, registerResponse, UsersResponse } from "../types/user";
-import { MikroORM } from "@mikro-orm/core";
-import { COOKIE_NAME } from "../constants";
+import { MyContext } from "../types";
+import { UserRes, UsersRes } from "../types/user";
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../constants";
+import { sendEmail } from "../utils/sendEmail";
+import CommonRes from "../types/objectType";
 
 @InputType()
 class UsernamePasswordInput {
+  @Field()
+  email!: string;
   @Field()
   username!: string;
   @Field()
   password!: string;
 }
 
-@ObjectType()
-class ErrorItem {
-  @Field()
-  field!: string;
-  @Field()
-  message!: string;
-}
+// @ObjectType()
+// class CommonRes {
+//   @Field(() => Int, { defaultValue: 0 }) // 0: success
+//   code?: number;
 
-@ObjectType()
-class LoginResponse {
-  @Field(() => User, { nullable: true })
-  user?: User
-
-  @Field(() => [ErrorItem], { nullable: true })
-  errorList?: ErrorItem[]
-}
+//   @Field(() => String, { defaultValue: 'success' })
+//   message?: string;
+// }
 
 @Resolver()
 export class UserResolve {
-  @Query(() => MeResponse)
-  async me (@Ctx() { em, req }: MyContext): Promise<MeResponse> {
+  @Mutation(() => CommonRes)
+  async forgotPassword (
+    @Arg('email') email: string,
+    @Ctx() { em, redis }: MyContext
+  ): Promise<CommonRes> {
+    const user = await em.findOne(User, { email });
+    if (!user) {
+      return {
+        code: 1,
+        message: 'error'
+      }
+    }
+
+    const token = uuidv4();
+
+    await redis.set(
+      FORGOT_PASSWORD_PREFIX + token,
+      user.id,
+      "ex",
+      1000 * 60 * 60 * 24 * 3
+    ); // 3 days
+
+    await sendEmail(email, `<a href="http://localhost:3000/change-password/${token}">reset password</a>`);
+    return {
+      code: 0,
+      message: 'success'
+    }
+  }
+
+  @Mutation(() => UserRes)
+  async changePassword (
+    @Arg('token') token: string,
+    @Arg('newPassword') newPassword: string,
+    @Ctx() { em, redis, req }: MyContext
+  ): Promise<UserRes> {
+    if (newPassword.length < 5) {
+      return {
+        code: 1,
+        message: '密码不得少于五位'
+      }
+    }
+
+    const key = FORGOT_PASSWORD_PREFIX + token;
+    const userId = await redis.get(key);
+
+    if (!userId) {
+      return {
+        code: 1,
+        message: "无效的 token"
+      }
+    }
+
+    const user = await em.findOne(User, { id: Number(userId) });
+
+    if (!user) {
+      return {
+        code: 1,
+        message: "用户不存在"
+      }
+    }
+
+    const hashPassword = await argon2.hash(newPassword);
+
+    user.password = hashPassword;
+
+    redis.del(key);
+
+    req.session.userId = user.id;
+
+    await em.persistAndFlush(user);
+
+    return {
+      code: 0,
+      message: '设置成功',
+      data: user
+    }
+  }
+
+  @Query(() => UserRes)
+  async me (@Ctx() { em, req }: MyContext): Promise<UserRes> {
     const user = await em.findOne(User, { id: req.session.userId });
     if (!user) {
       return {
@@ -49,8 +123,8 @@ export class UserResolve {
     };
   }
 
-  @Query(() => UsersResponse)
-  async users (@Ctx() { em }: MyContext): Promise<UsersResponse> {
+  @Query(() => UsersRes)
+  async users (@Ctx() { em }: MyContext): Promise<UsersRes> {
     const users = await em.find(User, {});
     return {
       code: 0,
@@ -59,13 +133,20 @@ export class UserResolve {
     }
   }
 
-  @Mutation(() => registerResponse)
+  @Mutation(() => UserRes)
   async register (
     @Arg('options') options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
-  ): Promise<registerResponse> {
+  ): Promise<UserRes> {
     const user = await em.findOne(User, { username: options.username });
     if (!user) {
+      if (!options.email.includes('@')) {
+        return {
+          code: 1,
+          message: '请输入正确的邮箱'
+        }
+      }
+
       if (options.username.length < 5) {
         return {
           code: 1,
@@ -80,7 +161,8 @@ export class UserResolve {
       }
       const newUser = await em.create(User, {
         username: options.username,
-        password: await argon2.hash(options.password)
+        password: await argon2.hash(options.password),
+        email: options.email
       });
 
       await em.persistAndFlush(newUser);
@@ -104,11 +186,11 @@ export class UserResolve {
   }
 
 
-  @Mutation(() => deleteUserResponse)
+  @Mutation(() => CommonRes)
   async deleteUser (
     @Arg('username') username: string,
     @Ctx() { em, req, res }: MyContext
-  ): Promise<deleteUserResponse> {
+  ): Promise<CommonRes> {
     const user = await em.findOne(User, { username });
     if (!user) {
       return {
@@ -125,24 +207,28 @@ export class UserResolve {
     }
   }
 
-  @Mutation(() => loginResponse)
+  @Mutation(() => UserRes)
   async login (
-    @Arg('options') options: UsernamePasswordInput,
+    @Arg('usernameOrEmail') usernameOrEmail: string,
+    @Arg('password') password: string,
     @Ctx() { em, req }: MyContext
-  ): Promise<loginResponse> {
-    const user = await em.findOne(User, { username: options.username });
+  ): Promise<UserRes> {
+    const user = await em.findOne(User,
+      usernameOrEmail.includes('@')
+        ? { email: usernameOrEmail }
+        : { username: usernameOrEmail });
 
     if (!user) {
       return {
         code: 1,
-        message: '找不到此用户'
+        message: '用户名或密码错误'
       }
     }
-    const isPasswordValid = await argon2.verify(user.password, options.password);
+    const isPasswordValid = await argon2.verify(user.password, password);
     if (!isPasswordValid) {
       return {
         code: 1,
-        message: '密码错误'
+        message: '用户名或密码错误'
       }
     }
 
@@ -155,10 +241,10 @@ export class UserResolve {
     };
   }
 
-  @Mutation(() => logoutResponse)
+  @Mutation(() => CommonRes)
   async logout (
     @Ctx() { req, res }: MyContext
-  ): Promise<logoutResponse> {
+  ): Promise<CommonRes> {
     return await new Promise(resolve => {
       req.session.destroy(err => {
         res.clearCookie(COOKIE_NAME)

@@ -37,6 +37,26 @@ const Register = () => {
           {
             required: true,
             message: 'Please input your username!',
+            validator: (rule, value, callback) => {
+              if (value.includes('@')) {
+                callback('用户名不能包含 @')
+              } else {
+                callback();
+              }
+            }
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        label="Email"
+        name="email"
+        rules={[
+          {
+            required: true,
+            message: 'Please input your email!',
           },
         ]}
       >

@@ -27,11 +27,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolve = void 0;
 const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
+const uuid_1 = require("uuid");
 const User_1 = require("../entities/User");
 const user_1 = require("../types/user");
 const constants_1 = require("../constants");
+const sendEmail_1 = require("../utils/sendEmail");
+const objectType_1 = __importDefault(require("../types/objectType"));
 let UsernamePasswordInput = class UsernamePasswordInput {
 };
+__decorate([
+    (0, type_graphql_1.Field)(),
+    __metadata("design:type", String)
+], UsernamePasswordInput.prototype, "email", void 0);
 __decorate([
     (0, type_graphql_1.Field)(),
     __metadata("design:type", String)
@@ -43,33 +50,67 @@ __decorate([
 UsernamePasswordInput = __decorate([
     (0, type_graphql_1.InputType)()
 ], UsernamePasswordInput);
-let ErrorItem = class ErrorItem {
-};
-__decorate([
-    (0, type_graphql_1.Field)(),
-    __metadata("design:type", String)
-], ErrorItem.prototype, "field", void 0);
-__decorate([
-    (0, type_graphql_1.Field)(),
-    __metadata("design:type", String)
-], ErrorItem.prototype, "message", void 0);
-ErrorItem = __decorate([
-    (0, type_graphql_1.ObjectType)()
-], ErrorItem);
-let LoginResponse = class LoginResponse {
-};
-__decorate([
-    (0, type_graphql_1.Field)(() => User_1.User, { nullable: true }),
-    __metadata("design:type", User_1.User)
-], LoginResponse.prototype, "user", void 0);
-__decorate([
-    (0, type_graphql_1.Field)(() => [ErrorItem], { nullable: true }),
-    __metadata("design:type", Array)
-], LoginResponse.prototype, "errorList", void 0);
-LoginResponse = __decorate([
-    (0, type_graphql_1.ObjectType)()
-], LoginResponse);
+// @ObjectType()
+// class CommonRes {
+//   @Field(() => Int, { defaultValue: 0 }) // 0: success
+//   code?: number;
+//   @Field(() => String, { defaultValue: 'success' })
+//   message?: string;
+// }
 let UserResolve = class UserResolve {
+    forgotPassword(email, { em, redis }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const user = yield em.findOne(User_1.User, { email });
+            if (!user) {
+                return {
+                    code: 1,
+                    message: 'error'
+                };
+            }
+            const token = (0, uuid_1.v4)();
+            yield redis.set(constants_1.FORGOT_PASSWORD_PREFIX + token, user.id, "ex", 1000 * 60 * 60 * 24 * 3); // 3 days
+            yield (0, sendEmail_1.sendEmail)(email, `<a href="http://localhost:3000/change-password/${token}">reset password</a>`);
+            return {
+                code: 0,
+                message: 'success'
+            };
+        });
+    }
+    changePassword(token, newPassword, { em, redis, req }) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (newPassword.length < 5) {
+                return {
+                    code: 1,
+                    message: '密码不得少于五位'
+                };
+            }
+            const key = constants_1.FORGOT_PASSWORD_PREFIX + token;
+            const userId = yield redis.get(key);
+            if (!userId) {
+                return {
+                    code: 1,
+                    message: "无效的 token"
+                };
+            }
+            const user = yield em.findOne(User_1.User, { id: Number(userId) });
+            if (!user) {
+                return {
+                    code: 1,
+                    message: "用户不存在"
+                };
+            }
+            const hashPassword = yield argon2_1.default.hash(newPassword);
+            user.password = hashPassword;
+            redis.del(key);
+            req.session.userId = user.id;
+            yield em.persistAndFlush(user);
+            return {
+                code: 0,
+                message: '设置成功',
+                data: user
+            };
+        });
+    }
     me({ em, req }) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield em.findOne(User_1.User, { id: req.session.userId });
@@ -100,6 +141,12 @@ let UserResolve = class UserResolve {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield em.findOne(User_1.User, { username: options.username });
             if (!user) {
+                if (!options.email.includes('@')) {
+                    return {
+                        code: 1,
+                        message: '请输入正确的邮箱'
+                    };
+                }
                 if (options.username.length < 5) {
                     return {
                         code: 1,
@@ -114,7 +161,8 @@ let UserResolve = class UserResolve {
                 }
                 const newUser = yield em.create(User_1.User, {
                     username: options.username,
-                    password: yield argon2_1.default.hash(options.password)
+                    password: yield argon2_1.default.hash(options.password),
+                    email: options.email
                 });
                 yield em.persistAndFlush(newUser);
                 const userInfo = yield em.findOne(User_1.User, { username: newUser.username });
@@ -151,20 +199,22 @@ let UserResolve = class UserResolve {
             };
         });
     }
-    login(options, { em, req }) {
+    login(usernameOrEmail, password, { em, req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield em.findOne(User_1.User, { username: options.username });
+            const user = yield em.findOne(User_1.User, usernameOrEmail.includes('@')
+                ? { email: usernameOrEmail }
+                : { username: usernameOrEmail });
             if (!user) {
                 return {
                     code: 1,
-                    message: '找不到此用户'
+                    message: '用户名或密码错误'
                 };
             }
-            const isPasswordValid = yield argon2_1.default.verify(user.password, options.password);
+            const isPasswordValid = yield argon2_1.default.verify(user.password, password);
             if (!isPasswordValid) {
                 return {
                     code: 1,
-                    message: '密码错误'
+                    message: '用户名或密码错误'
                 };
             }
             req.session.userId = user.id;
@@ -196,21 +246,38 @@ let UserResolve = class UserResolve {
     }
 };
 __decorate([
-    (0, type_graphql_1.Query)(() => user_1.MeResponse),
+    (0, type_graphql_1.Mutation)(() => objectType_1.default),
+    __param(0, (0, type_graphql_1.Arg)('email')),
+    __param(1, (0, type_graphql_1.Ctx)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolve.prototype, "forgotPassword", null);
+__decorate([
+    (0, type_graphql_1.Mutation)(() => user_1.UserRes),
+    __param(0, (0, type_graphql_1.Arg)('token')),
+    __param(1, (0, type_graphql_1.Arg)('newPassword')),
+    __param(2, (0, type_graphql_1.Ctx)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, Object]),
+    __metadata("design:returntype", Promise)
+], UserResolve.prototype, "changePassword", null);
+__decorate([
+    (0, type_graphql_1.Query)(() => user_1.UserRes),
     __param(0, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserResolve.prototype, "me", null);
 __decorate([
-    (0, type_graphql_1.Query)(() => user_1.UsersResponse),
+    (0, type_graphql_1.Query)(() => user_1.UsersRes),
     __param(0, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserResolve.prototype, "users", null);
 __decorate([
-    (0, type_graphql_1.Mutation)(() => user_1.registerResponse),
+    (0, type_graphql_1.Mutation)(() => user_1.UserRes),
     __param(0, (0, type_graphql_1.Arg)('options')),
     __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
@@ -218,7 +285,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolve.prototype, "register", null);
 __decorate([
-    (0, type_graphql_1.Mutation)(() => user_1.deleteUserResponse),
+    (0, type_graphql_1.Mutation)(() => objectType_1.default),
     __param(0, (0, type_graphql_1.Arg)('username')),
     __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
@@ -226,15 +293,16 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolve.prototype, "deleteUser", null);
 __decorate([
-    (0, type_graphql_1.Mutation)(() => user_1.loginResponse),
-    __param(0, (0, type_graphql_1.Arg)('options')),
-    __param(1, (0, type_graphql_1.Ctx)()),
+    (0, type_graphql_1.Mutation)(() => user_1.UserRes),
+    __param(0, (0, type_graphql_1.Arg)('usernameOrEmail')),
+    __param(1, (0, type_graphql_1.Arg)('password')),
+    __param(2, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [UsernamePasswordInput, Object]),
+    __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], UserResolve.prototype, "login", null);
 __decorate([
-    (0, type_graphql_1.Mutation)(() => user_1.logoutResponse),
+    (0, type_graphql_1.Mutation)(() => objectType_1.default),
     __param(0, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),

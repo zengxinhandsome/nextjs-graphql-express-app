@@ -8,60 +8,31 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logoutResponse = exports.loginResponse = exports.deleteUserResponse = exports.registerResponse = exports.UsersResponse = exports.MeResponse = void 0;
+exports.UsersRes = exports.UserRes = void 0;
 const type_graphql_1 = require("type-graphql");
 const User_1 = require("../entities/User");
-const index_1 = require("../types/index");
-let MeResponse = class MeResponse extends index_1.ResponseType {
+const objectType_1 = __importDefault(require("./objectType"));
+let UserRes = class UserRes extends objectType_1.default {
 };
 __decorate([
     (0, type_graphql_1.Field)(() => User_1.User, { nullable: true, defaultValue: null }),
     __metadata("design:type", User_1.User)
-], MeResponse.prototype, "data", void 0);
-MeResponse = __decorate([
+], UserRes.prototype, "data", void 0);
+UserRes = __decorate([
     (0, type_graphql_1.ObjectType)()
-], MeResponse);
-exports.MeResponse = MeResponse;
-let UsersResponse = class UsersResponse extends index_1.ResponseType {
+], UserRes);
+exports.UserRes = UserRes;
+let UsersRes = class UsersRes extends objectType_1.default {
 };
 __decorate([
     (0, type_graphql_1.Field)(() => [User_1.User], { nullable: true, defaultValue: null }),
     __metadata("design:type", Array)
-], UsersResponse.prototype, "data", void 0);
-UsersResponse = __decorate([
+], UsersRes.prototype, "data", void 0);
+UsersRes = __decorate([
     (0, type_graphql_1.ObjectType)()
-], UsersResponse);
-exports.UsersResponse = UsersResponse;
-let registerResponse = class registerResponse extends index_1.ResponseType {
-};
-__decorate([
-    (0, type_graphql_1.Field)(() => User_1.User, { nullable: true, defaultValue: null }),
-    __metadata("design:type", User_1.User)
-], registerResponse.prototype, "data", void 0);
-registerResponse = __decorate([
-    (0, type_graphql_1.ObjectType)()
-], registerResponse);
-exports.registerResponse = registerResponse;
-let deleteUserResponse = class deleteUserResponse extends index_1.ResponseType {
-};
-deleteUserResponse = __decorate([
-    (0, type_graphql_1.ObjectType)()
-], deleteUserResponse);
-exports.deleteUserResponse = deleteUserResponse;
-let loginResponse = class loginResponse extends index_1.ResponseType {
-};
-__decorate([
-    (0, type_graphql_1.Field)(() => User_1.User, { nullable: true, defaultValue: null }),
-    __metadata("design:type", User_1.User)
-], loginResponse.prototype, "data", void 0);
-loginResponse = __decorate([
-    (0, type_graphql_1.ObjectType)()
-], loginResponse);
-exports.loginResponse = loginResponse;
-let logoutResponse = class logoutResponse extends index_1.ResponseType {
-};
-logoutResponse = __decorate([
-    (0, type_graphql_1.ObjectType)()
-], logoutResponse);
-exports.logoutResponse = logoutResponse;
+], UsersRes);
+exports.UsersRes = UsersRes;

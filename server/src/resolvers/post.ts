@@ -1,14 +1,14 @@
 import { Resolver, Query, Ctx, Arg, Int, Mutation } from "type-graphql";
 import { Post } from "../entities/Post";
-import { MyContext, ResponseType } from "../types";
-import { createPostResponse, deletePostResponse, getPostResponse, postResponse, updatePostResponse } from "../types/post";
+import { MyContext } from "../types";
+import { PostsRes, PostRes } from "../types/post";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 @Resolver()
 export class PostResolve {
-  @Query(() => postResponse)
-  async posts (@Ctx() { em }: MyContext): Promise<postResponse> {
+  @Query(() => PostsRes)
+  async posts (@Ctx() { em }: MyContext): Promise<PostsRes> {
     const post = await em.find(Post, {});
     return {
       code: 0,
@@ -17,11 +17,11 @@ export class PostResolve {
     }
   }
 
-  @Query(() => getPostResponse)
+  @Query(() => PostRes)
   async getPost (
     @Arg("id", () => Int) id: number,
     @Ctx() { em }: MyContext
-  ): Promise<getPostResponse> {
+  ): Promise<PostRes> {
     const post = await em.findOne(Post, { id });
     if (!post) {
       return {
@@ -37,11 +37,11 @@ export class PostResolve {
     }
   }
 
-  @Mutation(() => createPostResponse)
+  @Mutation(() => PostRes)
   async createPost (
     @Arg("title", () => String) title: string,
     @Ctx() { em }: MyContext
-  ): Promise<createPostResponse> {
+  ): Promise<PostRes> {
     const post = em.create(Post, { title });
     await em.persistAndFlush(post);
     return {
@@ -51,12 +51,12 @@ export class PostResolve {
     }
   }
 
-  @Mutation(() => updatePostResponse)
+  @Mutation(() => PostRes)
   async updatePost (
     @Arg("id", () => Int, { nullable: false }) id: number,
     @Arg("title", () => String, { nullable: true }) title: string,
     @Ctx() { em }: MyContext
-  ): Promise<updatePostResponse> {
+  ): Promise<PostRes> {
     const post = await em.findOne(Post, { id });
     if (!post) {
       return {
@@ -75,11 +75,11 @@ export class PostResolve {
   }
 
 
-  @Mutation(() => deletePostResponse)
+  @Mutation(() => PostRes)
   async deletePost (
     @Arg("id", () => Int) id: number,
     @Ctx() { em }: MyContext
-  ): Promise<deletePostResponse> {
+  ): Promise<PostRes> {
     const post = await em.nativeDelete(Post, { id });
     if (!post) {
       return {

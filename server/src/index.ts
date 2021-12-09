@@ -16,6 +16,8 @@ import config from './mikro-orm.config';
 import { HelloResolve } from './resolvers/hello';
 import { PostResolve } from "./resolvers/post";
 import { UserResolve } from "./resolvers/user";
+import { sendEmail } from "./utils/sendEmail";
+import { User } from "./entities/User";
 
 const main = async () => {
   const orm = await MikroORM.init(config);
@@ -71,7 +73,7 @@ const main = async () => {
       ApolloServerPluginLandingPageGraphQLPlayground()
     ],
     context: ({ req, res }) => {
-      return ({ em: orm.em, req, res })
+      return ({ em: orm.em, req, res, redis })
     }
   });
 

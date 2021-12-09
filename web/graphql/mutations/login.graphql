@@ -1,9 +1,11 @@
-mutation Login($username: String!, $password: String!) {
-  login(options: { username: $username, password: $password }) {
+mutation Login(
+  $usernameOrEmail: String!
+  $password: String!
+) {
+  login(usernameOrEmail: $usernameOrEmail, password: $password) {
     code
     message
     data {
-      createdAt
       ...RegularUser
     }
   }

@@ -8,31 +8,20 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.PostRes = exports.PostsRes = void 0;
 const type_graphql_1 = require("type-graphql");
-const Post_1 = require("../entities/Post");
-const objectType_1 = __importDefault(require("./objectType"));
-let PostsRes = class PostsRes extends objectType_1.default {
+let CommonRes = class CommonRes {
 };
 __decorate([
-    (0, type_graphql_1.Field)(() => [Post_1.Post], { nullable: true, defaultValue: null }),
-    __metadata("design:type", Array)
-], PostsRes.prototype, "data", void 0);
-PostsRes = __decorate([
-    (0, type_graphql_1.ObjectType)()
-], PostsRes);
-exports.PostsRes = PostsRes;
-let PostRes = class PostRes extends objectType_1.default {
-};
+    (0, type_graphql_1.Field)(() => type_graphql_1.Int, { defaultValue: 0 }) // 0: success
+    ,
+    __metadata("design:type", Number)
+], CommonRes.prototype, "code", void 0);
 __decorate([
-    (0, type_graphql_1.Field)(() => Post_1.Post, { nullable: true, defaultValue: null }),
-    __metadata("design:type", Post_1.Post)
-], PostRes.prototype, "data", void 0);
-PostRes = __decorate([
+    (0, type_graphql_1.Field)(() => String, { defaultValue: 'success' }),
+    __metadata("design:type", String)
+], CommonRes.prototype, "message", void 0);
+CommonRes = __decorate([
     (0, type_graphql_1.ObjectType)()
-], PostRes);
-exports.PostRes = PostRes;
+], CommonRes);
+exports.default = CommonRes;

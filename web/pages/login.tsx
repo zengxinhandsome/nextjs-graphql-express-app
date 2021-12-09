@@ -8,7 +8,6 @@ const Login = () => {
   const router = useRouter();
   const [, login] = useLoginMutation();
   const onFinish = (values: any) => {
-    console.log('Success:', values);
     login(values).then(({ data }) => {
       const response = data?.login
       if (response?.code === 0) {
@@ -32,12 +31,12 @@ const Login = () => {
       onFinishFailed={onFinishFailed}
     >
       <Form.Item
-        label="Username"
-        name="username"
+        label="UsernameOrEmail"
+        name="usernameOrEmail"
         rules={[
           {
             required: true,
-            message: 'Please input your username!',
+            message: 'Please input your username or email!',
           },
         ]}
       >

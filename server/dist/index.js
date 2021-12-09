@@ -76,7 +76,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             (0, apollo_server_core_1.ApolloServerPluginLandingPageGraphQLPlayground)()
         ],
         context: ({ req, res }) => {
-            return ({ em: orm.em, req, res });
+            return ({ em: orm.em, req, res, redis });
         }
     });
     yield apolloServer.start();
