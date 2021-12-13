@@ -1765,7 +1765,7 @@ bytes@3.1.0:
 
 bytes@^3.0.0:
   version "3.1.1"
-  resolved "https://registry.npmmirror.com/bytes/download/bytes-3.1.1.tgz#3f018291cb4cbad9accb6e6970bca9c8889e879a"
+  resolved "https://registry.npmmirror.com/bytes/download/bytes-3.1.1.tgz?cache=0&sync_timestamp=1637015216623&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fbytes%2Fdownload%2Fbytes-3.1.1.tgz#3f018291cb4cbad9accb6e6970bca9c8889e879a"
   integrity sha512-dWe4nWO/ruEOY7HkUJ5gFt1DCFV9zPRoJr8pV0/ASQermOZjtq8jMjOprC0Kd10GLN+l7xaUPvxzJFWtxGu8Fg==
 
 cacheable-request@^6.0.0:
@@ -2065,7 +2065,7 @@ combined-stream@^1.0.8:
 
 commander@^8.0.0:
   version "8.3.0"
-  resolved "https://registry.npmmirror.com/commander/download/commander-8.3.0.tgz?cache=0&sync_timestamp=1634886357672&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fcommander%2Fdownload%2Fcommander-8.3.0.tgz#4837ea1b2da67b9c616a67afbb0fafee567bca66"
+  resolved "https://registry.npmmirror.com/commander/download/commander-8.3.0.tgz?cache=0&sync_timestamp=1634886367984&other_urls=https%3A%2F%2Fregistry.npmmirror.com%2Fcommander%2Fdownload%2Fcommander-8.3.0.tgz#4837ea1b2da67b9c616a67afbb0fafee567bca66"
   integrity sha1-SDfqGy2me5xhamevuw+v7lZ7ymY=
 
 common-tags@1.8.0:
@@ -2242,12 +2242,12 @@ crypto-browserify@3.12.0:
 
 css-color-names@^0.0.4:
   version "0.0.4"
-  resolved "https://registry.nlark.com/css-color-names/download/css-color-names-0.0.4.tgz?cache=0&sync_timestamp=1618846942982&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fcss-color-names%2Fdownload%2Fcss-color-names-0.0.4.tgz#808adc2e79cf84738069b646cb20ec27beb629e0"
+  resolved "https://registry.npm.taobao.org/css-color-names/download/css-color-names-0.0.4.tgz#808adc2e79cf84738069b646cb20ec27beb629e0"
   integrity sha1-gIrcLnnPhHOAabZGyyDsJ762KeA=
 
 css-unit-converter@^1.1.1:
   version "1.1.2"
-  resolved "https://registry.nlark.com/css-unit-converter/download/css-unit-converter-1.1.2.tgz#4c77f5a1954e6dbff60695ecb214e3270436ab21"
+  resolved "https://registry.npmmirror.com/css-unit-converter/download/css-unit-converter-1.1.2.tgz#4c77f5a1954e6dbff60695ecb214e3270436ab21"
   integrity sha1-THf1oZVObb/2BpXsshTjJwQ2qyE=
 
 css.escape@1.5.1:
@@ -3348,7 +3348,7 @@ hmac-drbg@^1.0.1:
 
 hsl-regex@^1.0.0:
   version "1.0.0"
-  resolved "https://registry.nlark.com/hsl-regex/download/hsl-regex-1.0.0.tgz#d49330c789ed819e276a4c0d272dffa30b18fe6e"
+  resolved "https://registry.npm.taobao.org/hsl-regex/download/hsl-regex-1.0.0.tgz#d49330c789ed819e276a4c0d272dffa30b18fe6e"
   integrity sha1-1JMwx4ntgZ4nakwNJy3/owsY/m4=
 
 hsla-regex@^1.0.0:
@@ -3358,7 +3358,7 @@ hsla-regex@^1.0.0:
 
 html-tags@^3.1.0:
   version "3.1.0"
-  resolved "https://registry.nlark.com/html-tags/download/html-tags-3.1.0.tgz#7b5e6f7e665e9fb41f30007ed9e0d41e97fb2140"
+  resolved "https://registry.npm.taobao.org/html-tags/download/html-tags-3.1.0.tgz#7b5e6f7e665e9fb41f30007ed9e0d41e97fb2140"
   integrity sha1-e15vfmZen7QfMAB+2eDUHpf7IUA=
 
 http-cache-semantics@^4.0.0:
@@ -3585,7 +3585,7 @@ is-callable@^1.1.4, is-callable@^1.2.4:
 
 is-color-stop@^1.1.0:
   version "1.1.0"
-  resolved "https://registry.nlark.com/is-color-stop/download/is-color-stop-1.1.0.tgz#cfff471aee4dd5c9e158598fbe12967b5cdad345"
+  resolved "https://registry.npm.taobao.org/is-color-stop/download/is-color-stop-1.1.0.tgz#cfff471aee4dd5c9e158598fbe12967b5cdad345"
   integrity sha1-z/9HGu5N1cnhWFmPvhKWe1za00U=
   dependencies:
     css-color-names "^0.0.4"
@@ -3890,7 +3890,7 @@ json5@^2.1.2:
 
 jsonfile@^6.0.1:
   version "6.1.0"
-  resolved "https://registry.npm.taobao.org/jsonfile/download/jsonfile-6.1.0.tgz?cache=0&sync_timestamp=1604161876665&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fjsonfile%2Fdownload%2Fjsonfile-6.1.0.tgz#bc55b2634793c679ec6403094eb13698a6ec0aae"
+  resolved "https://registry.npm.taobao.org/jsonfile/download/jsonfile-6.1.0.tgz?cache=0&sync_timestamp=1604161850492&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Fjsonfile%2Fdownload%2Fjsonfile-6.1.0.tgz#bc55b2634793c679ec6403094eb13698a6ec0aae"
   integrity sha1-vFWyY0eTxnnsZAMJTrE2mKbsCq4=
   dependencies:
     universalify "^2.0.0"
@@ -4422,7 +4422,7 @@ no-case@^3.0.4:
 
 node-emoji@^1.11.0:
   version "1.11.0"
-  resolved "https://registry.nlark.com/node-emoji/download/node-emoji-1.11.0.tgz?cache=0&sync_timestamp=1628672555671&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fnode-emoji%2Fdownload%2Fnode-emoji-1.11.0.tgz#69a0150e6946e2f115e9d7ea4df7971e2628301c"
+  resolved "https://registry.nlark.com/node-emoji/download/node-emoji-1.11.0.tgz#69a0150e6946e2f115e9d7ea4df7971e2628301c"
   integrity sha1-aaAVDmlG4vEV6dfqTfeXHiYoMBw=
   dependencies:
     lodash "^4.17.21"
@@ -4878,10 +4878,19 @@ postcss@8.2.15:
     nanoid "^3.1.23"
     source-map "^0.6.1"
 
-postcss@^8.1.6, postcss@^8.3.5, postcss@^8.4.4:
+postcss@^8.1.6, postcss@^8.4.4:
   version "8.4.4"
   resolved "https://registry.npmmirror.com/postcss/download/postcss-8.4.4.tgz#d53d4ec6a75fd62557a66bb41978bf47ff0c2869"
   integrity sha512-joU6fBsN6EIer28Lj6GDFoC/5yOZzLCfn0zHAn/MYXI7aPt4m4hK5KC5ovEZXy+lnCjmYIbQWngvju2ddyEr8Q==
+  dependencies:
+    nanoid "^3.1.30"
+    picocolors "^1.0.0"
+    source-map-js "^1.0.1"
+
+postcss@^8.3.5:
+  version "8.4.5"
+  resolved "https://registry.npmmirror.com/postcss/download/postcss-8.4.5.tgz#bae665764dfd4c6fcc24dc0fdf7e7aa00cc77f95"
+  integrity sha512-jBDboWM8qpaqwkMwItqTQTiFikhs/67OYVvblFFTM7MrZjt6yMKd6r2kgXizEbTTljacm4NldIlZnhbjr84QYg==
   dependencies:
     nanoid "^3.1.30"
     picocolors "^1.0.0"
@@ -4899,7 +4908,7 @@ prepend-http@^2.0.0:
 
 pretty-hrtime@^1.0.3:
   version "1.0.3"
-  resolved "https://registry.nlark.com/pretty-hrtime/download/pretty-hrtime-1.0.3.tgz#b7e3ea42435a4c9b2759d99e0f201eb195802ee1"
+  resolved "https://registry.npm.taobao.org/pretty-hrtime/download/pretty-hrtime-1.0.3.tgz#b7e3ea42435a4c9b2759d99e0f201eb195802ee1"
   integrity sha1-t+PqQkNaTJsnWdmeDyAesZWALuE=
 
 process@0.11.10:
@@ -5427,7 +5436,7 @@ readdirp@~3.6.0:
 
 reduce-css-calc@^2.1.8:
   version "2.1.8"
-  resolved "https://registry.npm.taobao.org/reduce-css-calc/download/reduce-css-calc-2.1.8.tgz?cache=0&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Freduce-css-calc%2Fdownload%2Freduce-css-calc-2.1.8.tgz#7ef8761a28d614980dc0c982f772c93f7a99de03"
+  resolved "https://registry.npm.taobao.org/reduce-css-calc/download/reduce-css-calc-2.1.8.tgz#7ef8761a28d614980dc0c982f772c93f7a99de03"
   integrity sha1-fvh2GijWFJgNwMmC93LJP3qZ3gM=
   dependencies:
     css-unit-converter "^1.1.1"
@@ -5603,7 +5612,7 @@ rgb-regex@^1.0.1:
 
 rgba-regex@^1.0.0:
   version "1.0.0"
-  resolved "https://registry.nlark.com/rgba-regex/download/rgba-regex-1.0.0.tgz#43374e2e2ca0968b0ef1523460b7d730ff22eeb3"
+  resolved "https://registry.npm.taobao.org/rgba-regex/download/rgba-regex-1.0.0.tgz#43374e2e2ca0968b0ef1523460b7d730ff22eeb3"
   integrity sha1-QzdOLiyglosO8VI0YLfXMP8i7rM=
 
 rimraf@^3.0.0, rimraf@^3.0.2:
@@ -6307,7 +6316,7 @@ undici@^4.9.3:
 
 universalify@^2.0.0:
   version "2.0.0"
-  resolved "https://registry.npm.taobao.org/universalify/download/universalify-2.0.0.tgz?cache=0&sync_timestamp=1603180004159&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Funiversalify%2Fdownload%2Funiversalify-2.0.0.tgz#75a4984efedc4b08975c5aeb73f530d02df25717"
+  resolved "https://registry.npm.taobao.org/universalify/download/universalify-2.0.0.tgz?cache=0&sync_timestamp=1603180163852&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2Funiversalify%2Fdownload%2Funiversalify-2.0.0.tgz#75a4984efedc4b08975c5aeb73f530d02df25717"
   integrity sha1-daSYTv7cSwiXXFrrc/Uw0C3yVxc=
 
 unixify@^1.0.0:

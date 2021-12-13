@@ -1,12 +1,12 @@
-import { Resolver, Mutation, Arg, InputType, Ctx, Field, Query, ObjectType, Int } from "type-graphql";
 import argon2 from 'argon2';
+import { Arg, Ctx, Field, InputType, Mutation, Query, Resolver } from "type-graphql";
 import { v4 as uuidv4 } from 'uuid';
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../constants";
 import { User } from "../entities/User";
 import { MyContext } from "../types";
-import { UserRes, UsersRes } from "../types/user";
-import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from "../constants";
-import { sendEmail } from "../utils/sendEmail";
 import CommonRes from "../types/objectType";
+import { UserRes, UsersRes } from "../types/user";
+import { sendEmail } from "../utils/sendEmail";
 
 @InputType()
 class UsernamePasswordInput {
@@ -18,27 +18,19 @@ class UsernamePasswordInput {
   password!: string;
 }
 
-// @ObjectType()
-// class CommonRes {
-//   @Field(() => Int, { defaultValue: 0 }) // 0: success
-//   code?: number;
-
-//   @Field(() => String, { defaultValue: 'success' })
-//   message?: string;
-// }
-
 @Resolver()
 export class UserResolve {
   @Mutation(() => CommonRes)
   async forgotPassword (
     @Arg('email') email: string,
-    @Ctx() { em, redis }: MyContext
+    @Ctx() { redis }: MyContext
   ): Promise<CommonRes> {
-    const user = await em.findOne(User, { email });
+    const user = await User.findOne({ email });
+
     if (!user) {
       return {
         code: 1,
-        message: 'error'
+        message: '该邮箱未注册'
       }
     }
 
@@ -62,7 +54,7 @@ export class UserResolve {
   async changePassword (
     @Arg('token') token: string,
     @Arg('newPassword') newPassword: string,
-    @Ctx() { em, redis, req }: MyContext
+    @Ctx() { redis, req }: MyContext
   ): Promise<UserRes> {
     if (newPassword.length < 5) {
       return {
@@ -81,7 +73,7 @@ export class UserResolve {
       }
     }
 
-    const user = await em.findOne(User, { id: Number(userId) });
+    const user = await User.findOne(Number(userId));
 
     if (!user) {
       return {
@@ -93,12 +85,10 @@ export class UserResolve {
     const hashPassword = await argon2.hash(newPassword);
 
     user.password = hashPassword;
+    await user.save();
 
     redis.del(key);
-
     req.session.userId = user.id;
-
-    await em.persistAndFlush(user);
 
     return {
       code: 0,
@@ -108,8 +98,16 @@ export class UserResolve {
   }
 
   @Query(() => UserRes)
-  async me (@Ctx() { em, req }: MyContext): Promise<UserRes> {
-    const user = await em.findOne(User, { id: req.session.userId });
+  async me (
+    @Ctx() { req }: MyContext
+  ): Promise<UserRes> {
+    if (!req.session.userId) {
+      return {
+        code: 1,
+        message: '当前未登录'
+      };
+    }
+    const user = await User.findOne(req.session.userId);
     if (!user) {
       return {
         code: 1,
@@ -124,21 +122,21 @@ export class UserResolve {
   }
 
   @Query(() => UsersRes)
-  async users (@Ctx() { em }: MyContext): Promise<UsersRes> {
-    const users = await em.find(User, {});
+  async users (): Promise<UsersRes> {
+    const allUsers = await User.find();
     return {
       code: 0,
       message: 'success',
-      data: users
+      data: allUsers
     }
   }
 
   @Mutation(() => UserRes)
   async register (
     @Arg('options') options: UsernamePasswordInput,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { req }: MyContext
   ): Promise<UserRes> {
-    const user = await em.findOne(User, { username: options.username });
+    const user = await User.findOne({ username: options.username });
     if (!user) {
       if (!options.email.includes('@')) {
         return {
@@ -159,15 +157,14 @@ export class UserResolve {
           message: '密码不得少于五位'
         }
       }
-      const newUser = await em.create(User, {
-        username: options.username,
-        password: await argon2.hash(options.password),
-        email: options.email
-      });
+      const newUser = new User();
 
-      await em.persistAndFlush(newUser);
+      newUser.username = options.username;
+      newUser.password = await argon2.hash(options.password);
+      newUser.email = options.email;
+      await newUser.save();
 
-      const userInfo = await em.findOne(User, { username: newUser.username });
+      const userInfo = await User.findOne({ username: newUser.username });
 
       if (userInfo) {
         req.session.userId = userInfo.id;
@@ -181,6 +178,7 @@ export class UserResolve {
     }
     return {
       code: 1,
+      data: user,
       message: '该用户已存在'
     };
   }
@@ -188,20 +186,16 @@ export class UserResolve {
 
   @Mutation(() => CommonRes)
   async deleteUser (
-    @Arg('username') username: string,
-    @Ctx() { em, req, res }: MyContext
+    @Arg('username') username: string
   ): Promise<CommonRes> {
-    const user = await em.findOne(User, { username });
+    const user = await User.findOne({ username });
     if (!user) {
       return {
         code: 1,
         message: '该用户不存在'
       };
     }
-    await em.removeAndFlush(user);
-    // req.session.destroy(err => {
-    //   res.clearCookie('qid');
-    // });
+    await user.remove();
     return {
       message: '删除成功'
     }
@@ -211,12 +205,13 @@ export class UserResolve {
   async login (
     @Arg('usernameOrEmail') usernameOrEmail: string,
     @Arg('password') password: string,
-    @Ctx() { em, req }: MyContext
+    @Ctx() { req }: MyContext
   ): Promise<UserRes> {
-    const user = await em.findOne(User,
+    const user = await User.findOne(
       usernameOrEmail.includes('@')
         ? { email: usernameOrEmail }
-        : { username: usernameOrEmail });
+        : { username: usernameOrEmail }
+    );
 
     if (!user) {
       return {

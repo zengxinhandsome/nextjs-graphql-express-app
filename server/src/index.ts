@@ -1,30 +1,23 @@
-import "reflect-metadata";
-import { MikroORM } from '@mikro-orm/core';
-import express from 'express';
-import http from 'http';
-import { ApolloServer } from 'apollo-server-express';
 import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
-import { buildSchema } from 'type-graphql';
-import Redis from "ioredis";
+import { ApolloServer } from 'apollo-server-express';
 import connectRedis from 'connect-redis';
-import session from 'express-session';
 import cors from 'cors';
-
+import express from 'express';
+import session from 'express-session';
+import http from 'http';
+import Redis from "ioredis";
+import "reflect-metadata";
+import { buildSchema } from 'type-graphql';
+import { createConnection } from "typeorm";
 import { __prod__ } from './constants';
-// import { Post } from './entities/Post';
-import config from './mikro-orm.config';
+import ormConfig from './ormconfig';
 import { HelloResolve } from './resolvers/hello';
 import { PostResolve } from "./resolvers/post";
 import { UserResolve } from "./resolvers/user";
-import { sendEmail } from "./utils/sendEmail";
-import { User } from "./entities/User";
+
 
 const main = async () => {
-  const orm = await MikroORM.init(config);
-  await orm.getMigrator().up();
-  // const post = orm.em.create(Post, { title: 'my first post' });
-  // await orm.em.persistAndFlush(post);
-  // const posts = await orm.em.find(Post, {});
+  const connection = await createConnection(ormConfig);
 
   const app = express();
 
@@ -34,7 +27,8 @@ const main = async () => {
   const redis = new Redis(process.env.REDIS_URL);
 
   app.use(cors({
-    origin: process.env.CORS_ORIGIN,
+    // origin: process.env.CORS_ORIGIN,
+    origin: true,
     credentials: true
   }));
   app.use(
@@ -61,19 +55,19 @@ const main = async () => {
       resolvers: [HelloResolve, PostResolve, UserResolve],
       validate: false
     }),
-    formatResponse: (response, query) => {
-      // const operationName = query.request.operationName
-      return response;
-      // return {
-      //   data: response?.data && operationName && response?.data[operationName] || null
-      // }
-    },
+    // formatResponse: (response, query) => {
+    //   const operationName = query.request.operationName
+    //   return response;
+    //   return {
+    //     data: response?.data && operationName && response?.data[operationName] || null
+    //   }
+    // },
     plugins: [
       ApolloServerPluginDrainHttpServer({ httpServer }),
       ApolloServerPluginLandingPageGraphQLPlayground()
     ],
     context: ({ req, res }) => {
-      return ({ em: orm.em, req, res, redis })
+      return ({ req, res, redis })
     }
   });
 

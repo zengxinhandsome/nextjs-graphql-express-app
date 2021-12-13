@@ -23,9 +23,15 @@ const Login = () => {
     console.log('Failed:', errorInfo);
   };
 
+  const handleForget = () => {
+    router.push('/forgot-password');
+  }
+
   return (
     <Form
-      style={{ width: '600px', margin: '0 auto', paddingTop: '60px' }}
+      className="w-2/4 mx-auto pt-20"
+      labelCol={{ span: 6 }}
+      // style={{ width: '600px', margin: '0 auto', paddingTop: '60px' }}
       name="basic"
       onFinish={onFinish}
       onFinishFailed={onFinishFailed}
@@ -57,9 +63,12 @@ const Login = () => {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Login
-        </Button>
+        <div className="flex flex-row-reverse items-center">
+          <Button type="primary" htmlType="submit">
+            Login
+          </Button>
+          <Button type="link" className="text-xs text-blue-400" onClick={handleForget}>忘记密码?</Button>
+        </div>
       </Form.Item>
     </Form>
   );

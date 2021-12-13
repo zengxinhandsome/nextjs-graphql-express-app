@@ -12,35 +12,31 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-require("reflect-metadata");
-const core_1 = require("@mikro-orm/core");
-const express_1 = __importDefault(require("express"));
-const http_1 = __importDefault(require("http"));
-const apollo_server_express_1 = require("apollo-server-express");
 const apollo_server_core_1 = require("apollo-server-core");
-const type_graphql_1 = require("type-graphql");
-const ioredis_1 = __importDefault(require("ioredis"));
+const apollo_server_express_1 = require("apollo-server-express");
 const connect_redis_1 = __importDefault(require("connect-redis"));
-const express_session_1 = __importDefault(require("express-session"));
 const cors_1 = __importDefault(require("cors"));
+const express_1 = __importDefault(require("express"));
+const express_session_1 = __importDefault(require("express-session"));
+const http_1 = __importDefault(require("http"));
+const ioredis_1 = __importDefault(require("ioredis"));
+require("reflect-metadata");
+const type_graphql_1 = require("type-graphql");
+const typeorm_1 = require("typeorm");
 const constants_1 = require("./constants");
-// import { Post } from './entities/Post';
-const mikro_orm_config_1 = __importDefault(require("./mikro-orm.config"));
+const ormconfig_1 = __importDefault(require("./ormconfig"));
 const hello_1 = require("./resolvers/hello");
 const post_1 = require("./resolvers/post");
 const user_1 = require("./resolvers/user");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
-    const orm = yield core_1.MikroORM.init(mikro_orm_config_1.default);
-    yield orm.getMigrator().up();
-    // const post = orm.em.create(Post, { title: 'my first post' });
-    // await orm.em.persistAndFlush(post);
-    // const posts = await orm.em.find(Post, {});
+    const connection = yield (0, typeorm_1.createConnection)(ormconfig_1.default);
     const app = (0, express_1.default)();
     const httpServer = http_1.default.createServer(app);
     const RedisStore = (0, connect_redis_1.default)(express_session_1.default);
     const redis = new ioredis_1.default(process.env.REDIS_URL);
     app.use((0, cors_1.default)({
-        origin: process.env.CORS_ORIGIN,
+        // origin: process.env.CORS_ORIGIN,
+        origin: true,
         credentials: true
     }));
     app.use((0, express_session_1.default)({
@@ -64,19 +60,19 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             resolvers: [hello_1.HelloResolve, post_1.PostResolve, user_1.UserResolve],
             validate: false
         }),
-        formatResponse: (response, query) => {
-            // const operationName = query.request.operationName
-            return response;
-            // return {
-            //   data: response?.data && operationName && response?.data[operationName] || null
-            // }
-        },
+        // formatResponse: (response, query) => {
+        //   const operationName = query.request.operationName
+        //   return response;
+        //   return {
+        //     data: response?.data && operationName && response?.data[operationName] || null
+        //   }
+        // },
         plugins: [
             (0, apollo_server_core_1.ApolloServerPluginDrainHttpServer)({ httpServer }),
             (0, apollo_server_core_1.ApolloServerPluginLandingPageGraphQLPlayground)()
         ],
         context: ({ req, res }) => {
-            return ({ em: orm.em, req, res, redis });
+            return ({ req, res, redis });
         }
     });
     yield apolloServer.start();

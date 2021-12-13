@@ -25,14 +25,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserResolve = void 0;
-const type_graphql_1 = require("type-graphql");
 const argon2_1 = __importDefault(require("argon2"));
+const type_graphql_1 = require("type-graphql");
 const uuid_1 = require("uuid");
-const User_1 = require("../entities/User");
-const user_1 = require("../types/user");
 const constants_1 = require("../constants");
-const sendEmail_1 = require("../utils/sendEmail");
+const User_1 = require("../entities/User");
 const objectType_1 = __importDefault(require("../types/objectType"));
+const user_1 = require("../types/user");
+const sendEmail_1 = require("../utils/sendEmail");
 let UsernamePasswordInput = class UsernamePasswordInput {
 };
 __decorate([
@@ -50,21 +50,14 @@ __decorate([
 UsernamePasswordInput = __decorate([
     (0, type_graphql_1.InputType)()
 ], UsernamePasswordInput);
-// @ObjectType()
-// class CommonRes {
-//   @Field(() => Int, { defaultValue: 0 }) // 0: success
-//   code?: number;
-//   @Field(() => String, { defaultValue: 'success' })
-//   message?: string;
-// }
 let UserResolve = class UserResolve {
-    forgotPassword(email, { em, redis }) {
+    forgotPassword(email, { redis }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield em.findOne(User_1.User, { email });
+            const user = yield User_1.User.findOne({ email });
             if (!user) {
                 return {
                     code: 1,
-                    message: 'error'
+                    message: '该邮箱未注册'
                 };
             }
             const token = (0, uuid_1.v4)();
@@ -76,7 +69,7 @@ let UserResolve = class UserResolve {
             };
         });
     }
-    changePassword(token, newPassword, { em, redis, req }) {
+    changePassword(token, newPassword, { redis, req }) {
         return __awaiter(this, void 0, void 0, function* () {
             if (newPassword.length < 5) {
                 return {
@@ -92,7 +85,7 @@ let UserResolve = class UserResolve {
                     message: "无效的 token"
                 };
             }
-            const user = yield em.findOne(User_1.User, { id: Number(userId) });
+            const user = yield User_1.User.findOne(Number(userId));
             if (!user) {
                 return {
                     code: 1,
@@ -101,9 +94,9 @@ let UserResolve = class UserResolve {
             }
             const hashPassword = yield argon2_1.default.hash(newPassword);
             user.password = hashPassword;
+            yield user.save();
             redis.del(key);
             req.session.userId = user.id;
-            yield em.persistAndFlush(user);
             return {
                 code: 0,
                 message: '设置成功',
@@ -111,9 +104,15 @@ let UserResolve = class UserResolve {
             };
         });
     }
-    me({ em, req }) {
+    me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield em.findOne(User_1.User, { id: req.session.userId });
+            if (!req.session.userId) {
+                return {
+                    code: 1,
+                    message: '当前未登录'
+                };
+            }
+            const user = yield User_1.User.findOne(req.session.userId);
             if (!user) {
                 return {
                     code: 1,
@@ -127,19 +126,19 @@ let UserResolve = class UserResolve {
             };
         });
     }
-    users({ em }) {
+    users() {
         return __awaiter(this, void 0, void 0, function* () {
-            const users = yield em.find(User_1.User, {});
+            const allUsers = yield User_1.User.find();
             return {
                 code: 0,
                 message: 'success',
-                data: users
+                data: allUsers
             };
         });
     }
-    register(options, { em, req }) {
+    register(options, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield em.findOne(User_1.User, { username: options.username });
+            const user = yield User_1.User.findOne({ username: options.username });
             if (!user) {
                 if (!options.email.includes('@')) {
                     return {
@@ -159,13 +158,12 @@ let UserResolve = class UserResolve {
                         message: '密码不得少于五位'
                     };
                 }
-                const newUser = yield em.create(User_1.User, {
-                    username: options.username,
-                    password: yield argon2_1.default.hash(options.password),
-                    email: options.email
-                });
-                yield em.persistAndFlush(newUser);
-                const userInfo = yield em.findOne(User_1.User, { username: newUser.username });
+                const newUser = new User_1.User();
+                newUser.username = options.username;
+                newUser.password = yield argon2_1.default.hash(options.password);
+                newUser.email = options.email;
+                yield newUser.save();
+                const userInfo = yield User_1.User.findOne({ username: newUser.username });
                 if (userInfo) {
                     req.session.userId = userInfo.id;
                 }
@@ -177,31 +175,29 @@ let UserResolve = class UserResolve {
             }
             return {
                 code: 1,
+                data: user,
                 message: '该用户已存在'
             };
         });
     }
-    deleteUser(username, { em, req, res }) {
+    deleteUser(username) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield em.findOne(User_1.User, { username });
+            const user = yield User_1.User.findOne({ username });
             if (!user) {
                 return {
                     code: 1,
                     message: '该用户不存在'
                 };
             }
-            yield em.removeAndFlush(user);
-            // req.session.destroy(err => {
-            //   res.clearCookie('qid');
-            // });
+            yield user.remove();
             return {
                 message: '删除成功'
             };
         });
     }
-    login(usernameOrEmail, password, { em, req }) {
+    login(usernameOrEmail, password, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield em.findOne(User_1.User, usernameOrEmail.includes('@')
+            const user = yield User_1.User.findOne(usernameOrEmail.includes('@')
                 ? { email: usernameOrEmail }
                 : { username: usernameOrEmail });
             if (!user) {
@@ -271,9 +267,8 @@ __decorate([
 ], UserResolve.prototype, "me", null);
 __decorate([
     (0, type_graphql_1.Query)(() => user_1.UsersRes),
-    __param(0, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], UserResolve.prototype, "users", null);
 __decorate([
@@ -287,9 +282,8 @@ __decorate([
 __decorate([
     (0, type_graphql_1.Mutation)(() => objectType_1.default),
     __param(0, (0, type_graphql_1.Arg)('username')),
-    __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], UserResolve.prototype, "deleteUser", null);
 __decorate([
