@@ -13,8 +13,6 @@ const ForgotPassword: NextPage = () => {
       const data = res.data?.forgotPassword;
       if (data?.code === 0) {
         message.success('重置密码的地址已发送至您的邮箱！');
-      } else {
-        message.error(data?.message);
       }
     });
   }

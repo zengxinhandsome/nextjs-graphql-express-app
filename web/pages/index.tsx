@@ -1,6 +1,6 @@
 import type { NextPage } from 'next'
 import { withUrqlClient } from 'next-urql'
-import NavBar from '../components/navbar'
+import NavBar from '../components/Navbar'
 import { usePostsQuery } from '../generated/graphql'
 import { createUrqlClient } from '../utils/createUrqlClient'
 

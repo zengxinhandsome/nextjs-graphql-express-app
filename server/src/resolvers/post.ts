@@ -1,8 +1,18 @@
-import { Resolver, Query, Arg, Int, Mutation } from "type-graphql";
+import { Resolver, Query, Arg, Int, Mutation, InputType, Field, Ctx, UseMiddleware } from "type-graphql";
 import { Post } from "../entities/Post";
+import isAuth from "../middleware/isAuth";
+import { MyContext } from "../types";
 import { PostsRes, PostRes } from "../types/post";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+@InputType()
+class PostInput {
+  @Field({ nullable: false })
+  title!: string;
+  @Field({ nullable: false })
+  text!: string;
+}
 
 @Resolver()
 export class PostResolve {
@@ -35,18 +45,22 @@ export class PostResolve {
     }
   }
 
+  @UseMiddleware(isAuth)
   @Mutation(() => PostRes)
   async createPost (
-    @Arg("title", () => String) title: string,
+    @Arg("input", () => PostInput) input: PostInput,
+    @Ctx() { req }: MyContext
   ): Promise<PostRes> {
-    const post = new Post();
-    
-    post.title = title;
-    await post.save();
+    const newPost = await Post.create({
+      title: input.title,
+      text: input.text,
+      creatorId: req.session.userId
+    }).save();
+
     return {
       code: 0,
       message: 'success',
-      data: post
+      data: newPost
     }
   }
 

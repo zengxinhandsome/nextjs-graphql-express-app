@@ -13,9 +13,7 @@ const Register = () => {
       if (data?.code === 0) {
         message.success('注册成功');
         router.push('/');
-        return;
       }
-      message.error(data?.message);
     });
   };
 

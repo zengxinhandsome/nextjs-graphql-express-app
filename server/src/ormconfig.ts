@@ -7,6 +7,7 @@ const ormConfig: ConnectionOptions = {
   username: "postgres",
   password: "zx1328526673",
   database: "lireddit",
+  synchronize: true,
   logging: true,
   migrationsTableName: "typeorm_migration_table",
   migrations: ["dist/migrations/*.js"],

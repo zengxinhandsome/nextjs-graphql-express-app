@@ -1,14 +1,12 @@
 import React, { FC } from 'react';
 import { useRouter } from 'next/router';
-import { useMeQuery, useLogoutMutation } from '../../generated/graphql';
+import { useMeQuery, useLogoutMutation } from '../generated/graphql';
 import { message, Spin } from 'antd';
-import { isServer } from '../../constants/common';
+import { isServer } from '../constants/common';
 // import { withUrqlClient } from 'next-urql';
 // import { createUrqlClient } from '../../utils/createUrqlClient';
 
 const NavBar: FC = () => {
-  console.log('NavBar');
-
   const router = useRouter();
   const [{ data: userRes, fetching: fetchingUser }, getUserInfo] = useMeQuery({
     pause: isServer
@@ -16,9 +14,6 @@ const NavBar: FC = () => {
   const [, logout] = useLogoutMutation();
 
   const userInfo = userRes?.me.data;
-
-  console.log('userInfo: ', userRes);
-
 
   const handleRegister = () => {
     router.push('/register');

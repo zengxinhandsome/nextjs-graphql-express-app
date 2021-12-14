@@ -20,12 +20,29 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PostResolve = void 0;
 const type_graphql_1 = require("type-graphql");
 const Post_1 = require("../entities/Post");
+const isAuth_1 = __importDefault(require("../middleware/isAuth"));
 const post_1 = require("../types/post");
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+let PostInput = class PostInput {
+};
+__decorate([
+    (0, type_graphql_1.Field)({ nullable: false }),
+    __metadata("design:type", String)
+], PostInput.prototype, "title", void 0);
+__decorate([
+    (0, type_graphql_1.Field)({ nullable: false }),
+    __metadata("design:type", String)
+], PostInput.prototype, "text", void 0);
+PostInput = __decorate([
+    (0, type_graphql_1.InputType)()
+], PostInput);
 let PostResolve = class PostResolve {
     posts() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -53,15 +70,17 @@ let PostResolve = class PostResolve {
             };
         });
     }
-    createPost(title) {
+    createPost(input, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const post = new Post_1.Post();
-            post.title = title;
-            yield post.save();
+            const newPost = yield Post_1.Post.create({
+                title: input.title,
+                text: input.text,
+                creatorId: req.session.userId
+            }).save();
             return {
                 code: 0,
                 message: 'success',
-                data: post
+                data: newPost
             };
         });
     }
@@ -114,10 +133,12 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], PostResolve.prototype, "getPost", null);
 __decorate([
+    (0, type_graphql_1.UseMiddleware)(isAuth_1.default),
     (0, type_graphql_1.Mutation)(() => post_1.PostRes),
-    __param(0, (0, type_graphql_1.Arg)("title", () => String)),
+    __param(0, (0, type_graphql_1.Arg)("input", () => PostInput)),
+    __param(1, (0, type_graphql_1.Ctx)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [PostInput, Object]),
     __metadata("design:returntype", Promise)
 ], PostResolve.prototype, "createPost", null);
 __decorate([

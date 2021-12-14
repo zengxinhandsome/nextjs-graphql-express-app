@@ -10,6 +10,7 @@ import "reflect-metadata";
 import { buildSchema } from 'type-graphql';
 import { createConnection } from "typeorm";
 import { __prod__ } from './constants';
+import { Post } from './entities/Post';
 import ormConfig from './ormconfig';
 import { HelloResolve } from './resolvers/hello';
 import { PostResolve } from "./resolvers/post";
@@ -19,6 +20,7 @@ import { UserResolve } from "./resolvers/user";
 const main = async () => {
   const connection = await createConnection(ormConfig);
 
+  // await Post.delete({})
   const app = express();
 
   const httpServer = http.createServer(app);

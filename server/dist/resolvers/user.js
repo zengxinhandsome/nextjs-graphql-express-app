@@ -106,24 +106,39 @@ let UserResolve = class UserResolve {
     }
     me({ req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!req.session.userId) {
-                return {
-                    code: 1,
-                    message: '当前未登录'
-                };
-            }
-            const user = yield User_1.User.findOne(req.session.userId);
-            if (!user) {
-                return {
-                    code: 1,
-                    message: '当前未登录'
-                };
-            }
-            return {
-                code: 0,
-                message: 'success',
-                data: user
+            // if (!req.session.userId) {
+            //   return {
+            //     code: 1,
+            //     message: '当前未登录'
+            //   };
+            // }
+            // const user = await User.findOne(req.session.userId);
+            // if (!user) {
+            //   return {
+            //     code: 1,
+            //     message: '当前未登录'
+            //   };
+            // }
+            // return {
+            //   code: 0,
+            //   message: 'success',
+            //   data: user
+            // };
+            const errorReturn = {
+                code: 1
             };
+            if (req.session.userId) {
+                const user = yield User_1.User.findOne(req.session.userId);
+                if (user) {
+                    return {
+                        code: 0,
+                        message: 'success',
+                        data: user
+                    };
+                }
+                return errorReturn;
+            }
+            return errorReturn;
         });
     }
     users() {
@@ -163,10 +178,7 @@ let UserResolve = class UserResolve {
                 newUser.password = yield argon2_1.default.hash(options.password);
                 newUser.email = options.email;
                 yield newUser.save();
-                const userInfo = yield User_1.User.findOne({ username: newUser.username });
-                if (userInfo) {
-                    req.session.userId = userInfo.id;
-                }
+                req.session.userId = newUser.id;
                 return {
                     code: 0,
                     message: 'success',

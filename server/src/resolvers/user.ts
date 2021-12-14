@@ -101,24 +101,41 @@ export class UserResolve {
   async me (
     @Ctx() { req }: MyContext
   ): Promise<UserRes> {
-    if (!req.session.userId) {
-      return {
-        code: 1,
-        message: '当前未登录'
-      };
+    // if (!req.session.userId) {
+    //   return {
+    //     code: 1,
+    //     message: '当前未登录'
+    //   };
+    // }
+    // const user = await User.findOne(req.session.userId);
+    // if (!user) {
+    //   return {
+    //     code: 1,
+    //     message: '当前未登录'
+    //   };
+    // }
+    // return {
+    //   code: 0,
+    //   message: 'success',
+    //   data: user
+    // };
+
+    const errorReturn = {
+      code: 1
     }
-    const user = await User.findOne(req.session.userId);
-    if (!user) {
-      return {
-        code: 1,
-        message: '当前未登录'
-      };
+
+    if (req.session.userId) {
+      const user = await User.findOne(req.session.userId);
+      if (user) {
+        return {
+          code: 0,
+          message: 'success',
+          data: user
+        };
+      }
+      return errorReturn;
     }
-    return {
-      code: 0,
-      message: 'success',
-      data: user
-    };
+    return errorReturn;
   }
 
   @Query(() => UsersRes)
@@ -157,6 +174,7 @@ export class UserResolve {
           message: '密码不得少于五位'
         }
       }
+
       const newUser = new User();
 
       newUser.username = options.username;
@@ -164,11 +182,7 @@ export class UserResolve {
       newUser.email = options.email;
       await newUser.save();
 
-      const userInfo = await User.findOne({ username: newUser.username });
-
-      if (userInfo) {
-        req.session.userId = userInfo.id;
-      }
+      req.session.userId = newUser.id;
 
       return {
         code: 0,

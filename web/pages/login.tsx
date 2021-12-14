@@ -13,9 +13,9 @@ const Login = () => {
       if (response?.code === 0) {
         message.success('登录成功');
         router.push('/');
-        return;
+        // return;
       }
-      message.error(response?.message);
+      // message.error(response?.message);
     });
   };
 
