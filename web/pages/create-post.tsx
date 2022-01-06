@@ -17,11 +17,7 @@ const CreatePost = () => {
 
   return (
     <Layout>
-      <Form
-        className="w-2/4 mx-auto pt-20"
-        labelCol={{ span: 6 }}
-        name="basic"
-        onFinish={onFinish}
+      <Form className="w-2/4 mx-auto pt-20" labelCol={{ span: 6 }} name="basic" onFinish={onFinish}
       >
         <Form.Item
           label="标题"

@@ -7,7 +7,7 @@ const Layout: NextPage = ({ children }) => {
       <NavBar />
       {children}
     </>
-  )
-}
+  );
+};
 
 export default Layout;

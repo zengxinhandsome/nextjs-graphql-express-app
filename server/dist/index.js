@@ -30,6 +30,7 @@ const post_1 = require("./resolvers/post");
 const user_1 = require("./resolvers/user");
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     const connection = yield (0, typeorm_1.createConnection)(ormconfig_1.default);
+    // await connection.runMigrations();
     // await Post.delete({})
     const app = (0, express_1.default)();
     const httpServer = http_1.default.createServer(app);

@@ -51,21 +51,29 @@ UsernamePasswordInput = __decorate([
     (0, type_graphql_1.InputType)()
 ], UsernamePasswordInput);
 let UserResolve = class UserResolve {
+    email(user, { req }) {
+        // this is the current user and its ok to show them their own email
+        if (req.session.userId === user.id) {
+            return user.email;
+        }
+        // current user wants to see someone elses email
+        return '';
+    }
     forgotPassword(email, { redis }) {
         return __awaiter(this, void 0, void 0, function* () {
             const user = yield User_1.User.findOne({ email });
             if (!user) {
                 return {
                     code: 1,
-                    message: '该邮箱未注册'
+                    message: '该邮箱未注册',
                 };
             }
             const token = (0, uuid_1.v4)();
-            yield redis.set(constants_1.FORGOT_PASSWORD_PREFIX + token, user.id, "ex", 1000 * 60 * 60 * 24 * 3); // 3 days
+            yield redis.set(constants_1.FORGOT_PASSWORD_PREFIX + token, user.id, 'ex', 1000 * 60 * 60 * 24 * 3); // 3 days
             yield (0, sendEmail_1.sendEmail)(email, `<a href="http://localhost:3000/change-password/${token}">reset password</a>`);
             return {
                 code: 0,
-                message: 'success'
+                message: 'success',
             };
         });
     }
@@ -74,7 +82,7 @@ let UserResolve = class UserResolve {
             if (newPassword.length < 5) {
                 return {
                     code: 1,
-                    message: '密码不得少于五位'
+                    message: '密码不得少于五位',
                 };
             }
             const key = constants_1.FORGOT_PASSWORD_PREFIX + token;
@@ -82,14 +90,14 @@ let UserResolve = class UserResolve {
             if (!userId) {
                 return {
                     code: 1,
-                    message: "无效的 token"
+                    message: '无效的 token',
                 };
             }
             const user = yield User_1.User.findOne(Number(userId));
             if (!user) {
                 return {
                     code: 1,
-                    message: "用户不存在"
+                    message: '用户不存在',
                 };
             }
             const hashPassword = yield argon2_1.default.hash(newPassword);
@@ -100,7 +108,7 @@ let UserResolve = class UserResolve {
             return {
                 code: 0,
                 message: '设置成功',
-                data: user
+                data: user,
             };
         });
     }
@@ -125,7 +133,7 @@ let UserResolve = class UserResolve {
             //   data: user
             // };
             const errorReturn = {
-                code: 1
+                code: 1,
             };
             if (req.session.userId) {
                 const user = yield User_1.User.findOne(req.session.userId);
@@ -133,7 +141,7 @@ let UserResolve = class UserResolve {
                     return {
                         code: 0,
                         message: 'success',
-                        data: user
+                        data: user,
                     };
                 }
                 return errorReturn;
@@ -147,7 +155,7 @@ let UserResolve = class UserResolve {
             return {
                 code: 0,
                 message: 'success',
-                data: allUsers
+                data: allUsers,
             };
         });
     }
@@ -158,19 +166,19 @@ let UserResolve = class UserResolve {
                 if (!options.email.includes('@')) {
                     return {
                         code: 1,
-                        message: '请输入正确的邮箱'
+                        message: '请输入正确的邮箱',
                     };
                 }
                 if (options.username.length < 5) {
                     return {
                         code: 1,
-                        message: '用户名不得少于五位'
+                        message: '用户名不得少于五位',
                     };
                 }
                 if (options.password.length < 5) {
                     return {
                         code: 1,
-                        message: '密码不得少于五位'
+                        message: '密码不得少于五位',
                     };
                 }
                 const newUser = new User_1.User();
@@ -182,13 +190,13 @@ let UserResolve = class UserResolve {
                 return {
                     code: 0,
                     message: 'success',
-                    data: newUser
+                    data: newUser,
                 };
             }
             return {
                 code: 1,
                 data: user,
-                message: '该用户已存在'
+                message: '该用户已存在',
             };
         });
     }
@@ -198,38 +206,36 @@ let UserResolve = class UserResolve {
             if (!user) {
                 return {
                     code: 1,
-                    message: '该用户不存在'
+                    message: '该用户不存在',
                 };
             }
             yield user.remove();
             return {
-                message: '删除成功'
+                message: '删除成功',
             };
         });
     }
     login(usernameOrEmail, password, { req }) {
         return __awaiter(this, void 0, void 0, function* () {
-            const user = yield User_1.User.findOne(usernameOrEmail.includes('@')
-                ? { email: usernameOrEmail }
-                : { username: usernameOrEmail });
+            const user = yield User_1.User.findOne(usernameOrEmail.includes('@') ? { email: usernameOrEmail } : { username: usernameOrEmail });
             if (!user) {
                 return {
                     code: 1,
-                    message: '用户名或密码错误'
+                    message: '用户名或密码错误',
                 };
             }
             const isPasswordValid = yield argon2_1.default.verify(user.password, password);
             if (!isPasswordValid) {
                 return {
                     code: 1,
-                    message: '用户名或密码错误'
+                    message: '用户名或密码错误',
                 };
             }
             req.session.userId = user.id;
             return {
                 code: 0,
                 message: 'success',
-                data: user
+                data: user,
             };
         });
     }
@@ -241,18 +247,26 @@ let UserResolve = class UserResolve {
                     if (err) {
                         resolve({
                             code: 1,
-                            message: err
+                            message: err,
                         });
                     }
                     resolve({
                         message: 'success',
-                        code: 0
+                        code: 0,
                     });
                 });
             });
         });
     }
 };
+__decorate([
+    (0, type_graphql_1.FieldResolver)(() => String),
+    __param(0, (0, type_graphql_1.Root)()),
+    __param(1, (0, type_graphql_1.Ctx)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [User_1.User, Object]),
+    __metadata("design:returntype", void 0)
+], UserResolve.prototype, "email", null);
 __decorate([
     (0, type_graphql_1.Mutation)(() => objectType_1.default),
     __param(0, (0, type_graphql_1.Arg)('email')),
@@ -315,6 +329,6 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserResolve.prototype, "logout", null);
 UserResolve = __decorate([
-    (0, type_graphql_1.Resolver)()
+    (0, type_graphql_1.Resolver)(User_1.User)
 ], UserResolve);
 exports.UserResolve = UserResolve;

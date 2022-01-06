@@ -16,11 +16,24 @@ exports.PostRes = exports.PostsRes = void 0;
 const type_graphql_1 = require("type-graphql");
 const Post_1 = require("../entities/Post");
 const objectType_1 = __importDefault(require("./objectType"));
+let PaginatedPosts = class PaginatedPosts {
+};
+__decorate([
+    (0, type_graphql_1.Field)(() => [Post_1.Post]),
+    __metadata("design:type", Array)
+], PaginatedPosts.prototype, "posts", void 0);
+__decorate([
+    (0, type_graphql_1.Field)(),
+    __metadata("design:type", Boolean)
+], PaginatedPosts.prototype, "hasMore", void 0);
+PaginatedPosts = __decorate([
+    (0, type_graphql_1.ObjectType)()
+], PaginatedPosts);
 let PostsRes = class PostsRes extends objectType_1.default {
 };
 __decorate([
-    (0, type_graphql_1.Field)(() => [Post_1.Post], { nullable: true, defaultValue: null }),
-    __metadata("design:type", Array)
+    (0, type_graphql_1.Field)(() => PaginatedPosts, { nullable: true, defaultValue: null }),
+    __metadata("design:type", Object)
 ], PostsRes.prototype, "data", void 0);
 PostsRes = __decorate([
     (0, type_graphql_1.ObjectType)()

@@ -1,7 +1,7 @@
 import React, { FC } from 'react';
 import { useRouter } from 'next/router';
 import { useMeQuery, useLogoutMutation } from '../generated/graphql';
-import { message, Spin } from 'antd';
+import { Button, message, Spin } from 'antd';
 import { isServer } from '../constants/common';
 // import { withUrqlClient } from 'next-urql';
 // import { createUrqlClient } from '../../utils/createUrqlClient';
@@ -9,7 +9,7 @@ import { isServer } from '../constants/common';
 const NavBar: FC = () => {
   const router = useRouter();
   const [{ data: userRes, fetching: fetchingUser }, getUserInfo] = useMeQuery({
-    pause: isServer
+    pause: isServer,
   });
   const [, logout] = useLogoutMutation();
 
@@ -17,11 +17,11 @@ const NavBar: FC = () => {
 
   const handleRegister = () => {
     router.push('/register');
-  }
+  };
 
   const handleLogin = () => {
     router.push('/login');
-  }
+  };
 
   const handleLogout = () => {
     logout().then(res => {
@@ -29,31 +29,36 @@ const NavBar: FC = () => {
         message.success('退出登录成功');
         getUserInfo({ requestPolicy: 'network-only' });
       }
-    })
-  }
+    });
+  };
 
-  return (
-    <div className="h-16 bg-gray-500 flex flex-row-reverse items-center pr-5">
-      <div></div>
-      <div>
-        <span className="text-white text-base cursor-pointer">
-          {
-            userInfo ? (
-              <Spin spinning={fetchingUser}>
-                <span className="mr-2 text-green-500">{userInfo?.username}</span>
-                <span className="mr-2" onClick={handleLogout}>退出登录</span>
-              </Spin>
-            ) : (
-              <>
-                <span className="mr-2" onClick={handleRegister}>注册</span>
-                <span onClick={handleLogin}>登录</span>
-              </>
-            )
-          }
-        </span>
-      </div>
-    </div>
-  )
-}
+  const renderBtns = () => {
+    if (userInfo) {
+      return (
+        <div className="flex items-center">
+          <Spin spinning={fetchingUser}>
+            <span className="mr-2 text-green-500">{userInfo?.username}</span>
+            <Button type="link" onClick={handleLogout}>
+              退出登录
+            </Button>
+          </Spin>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center">
+          <Button className="mr-5" type="primary" ghost onClick={handleRegister}>
+            注册
+          </Button>
+          <Button className="mr-5" type="primary" ghost onClick={handleLogin}>
+            登录
+          </Button>
+        </div>
+      );
+    }
+  };
+
+  return <div className="h-16 bg-white flex justify-end align-middle">{renderBtns()}</div>;
+};
 
 export default NavBar;

@@ -20,6 +20,8 @@ import { UserResolve } from "./resolvers/user";
 const main = async () => {
   const connection = await createConnection(ormConfig);
 
+  // await connection.runMigrations();
+
   // await Post.delete({})
   const app = express();
 

@@ -1,12 +1,24 @@
-query Posts {
-  posts {
+query Posts($limit: Int!, $cursor: String) {
+  posts(limit: $limit, cursor: $cursor) {
     code
     message
     data {
-      id
-      title
-      createdAt
-      updatedAt
+      posts {
+        id
+        title
+        createdAt
+        updatedAt
+        creatorId
+        creator {
+          id
+          username
+          email
+          createdAt
+        }
+        text
+        textSnippet
+      }
+      hasMore
     }
   }
 }

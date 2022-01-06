@@ -1,6 +1,6 @@
 .idea/
 # .vscode/
-# dist/
+dist/
 logs
 *.log
 npm-debug.log*

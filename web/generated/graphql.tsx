@@ -84,13 +84,21 @@ export type MutationUpdatePostArgs = {
   title?: InputMaybe<Scalars['String']>;
 };
 
+export type PaginatedPosts = {
+  __typename?: 'PaginatedPosts';
+  hasMore: Scalars['Boolean'];
+  posts: Array<Post>;
+};
+
 export type Post = {
   __typename?: 'Post';
   createdAt: Scalars['String'];
+  creator: User;
   creatorId: Scalars['Float'];
   id: Scalars['Float'];
   points: Scalars['Float'];
   text: Scalars['String'];
+  textSnippet: Scalars['String'];
   title: Scalars['String'];
   updatedAt: Scalars['String'];
 };
@@ -110,7 +118,7 @@ export type PostRes = {
 export type PostsRes = {
   __typename?: 'PostsRes';
   code?: Maybe<Scalars['Int']>;
-  data?: Maybe<Array<Post>>;
+  data?: Maybe<PaginatedPosts>;
   message?: Maybe<Scalars['String']>;
 };
 
@@ -126,6 +134,12 @@ export type Query = {
 
 export type QueryGetPostArgs = {
   id: Scalars['Int'];
+};
+
+
+export type QueryPostsArgs = {
+  cursor?: InputMaybe<Scalars['String']>;
+  limit: Scalars['Int'];
 };
 
 export type User = {
@@ -209,10 +223,13 @@ export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type MeQuery = { __typename?: 'Query', me: { __typename?: 'UserRes', code?: number | null | undefined, message?: string | null | undefined, data?: { __typename?: 'User', id: number, username: string, email: string, updatedAt: string } | null | undefined } };
 
-export type PostsQueryVariables = Exact<{ [key: string]: never; }>;
+export type PostsQueryVariables = Exact<{
+  limit: Scalars['Int'];
+  cursor?: InputMaybe<Scalars['String']>;
+}>;
 
 
-export type PostsQuery = { __typename?: 'Query', posts: { __typename?: 'PostsRes', code?: number | null | undefined, message?: string | null | undefined, data?: Array<{ __typename?: 'Post', id: number, title: string, createdAt: string, updatedAt: string }> | null | undefined } };
+export type PostsQuery = { __typename?: 'Query', posts: { __typename?: 'PostsRes', code?: number | null | undefined, message?: string | null | undefined, data?: { __typename?: 'PaginatedPosts', hasMore: boolean, posts: Array<{ __typename?: 'Post', id: number, title: string, createdAt: string, updatedAt: string, creatorId: number, text: string, textSnippet: string, creator: { __typename?: 'User', id: number, username: string, email: string, createdAt: string } }> } | null | undefined } };
 
 export const RegularUserFragmentDoc = gql`
     fragment RegularUser on User {
@@ -325,15 +342,27 @@ export function useMeQuery(options: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'q
   return Urql.useQuery<MeQuery>({ query: MeDocument, ...options });
 };
 export const PostsDocument = gql`
-    query Posts {
-  posts {
+    query Posts($limit: Int!, $cursor: String) {
+  posts(limit: $limit, cursor: $cursor) {
     code
     message
     data {
-      id
-      title
-      createdAt
-      updatedAt
+      posts {
+        id
+        title
+        createdAt
+        updatedAt
+        creatorId
+        creator {
+          id
+          username
+          email
+          createdAt
+        }
+        text
+        textSnippet
+      }
+      hasMore
     }
   }
 }
