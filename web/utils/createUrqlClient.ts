@@ -16,7 +16,7 @@ export const errorExchange: Exchange = ({ forward }) => ops$ => {
       const code = dataKey && data[dataKey].code;
       const msg = dataKey && data[dataKey].message;
       if (code !== 0 && msg) {
-        message.error(data[dataKey].msg);
+        message.error(msg);
       }
     })
   );

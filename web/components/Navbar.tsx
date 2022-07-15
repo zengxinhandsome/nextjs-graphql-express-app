@@ -1,10 +1,11 @@
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useMeQuery, useLogoutMutation } from '../generated/graphql';
-import { Button, message, Spin } from 'antd';
+import { Button, message, Spin, Avatar, Modal } from 'antd';
 import { isServer } from '../constants/common';
 // import { withUrqlClient } from 'next-urql';
 // import { createUrqlClient } from '../../utils/createUrqlClient';
+import ModalCreatePost from './ModalCreatePost';
 
 const NavBar: FC = () => {
   const router = useRouter();
@@ -12,6 +13,7 @@ const NavBar: FC = () => {
     pause: isServer,
   });
   const [, logout] = useLogoutMutation();
+  const [visible, setVisible] = useState<boolean>(false);
 
   const userInfo = userRes?.me.data;
 
@@ -32,11 +34,22 @@ const NavBar: FC = () => {
     });
   };
 
+  const handleCreatePost = () => {
+    setVisible(true);
+  };
+
   const renderBtns = () => {
     if (userInfo) {
       return (
         <div className="flex items-center">
+          <Button type="link" onClick={handleCreatePost}>
+            写文章
+          </Button>
           <Spin spinning={fetchingUser}>
+            <Avatar
+              className="mr-3"
+              src="https://p9-passport.byteacctimg.com/img/mosaic-legacy/3795/3044413937~120x256.image"
+            />
             <span className="mr-2 text-green-500">{userInfo?.username}</span>
             <Button type="link" onClick={handleLogout}>
               退出登录
@@ -58,7 +71,12 @@ const NavBar: FC = () => {
     }
   };
 
-  return <div className="h-16 bg-white flex justify-end align-middle">{renderBtns()}</div>;
+  return (
+    <>
+      <div className="h-16 bg-white flex justify-end align-middle">{renderBtns()}</div>
+      <ModalCreatePost visible={visible} closeModal={() => setVisible(false)} />
+    </>
+  );
 };
 
 export default NavBar;

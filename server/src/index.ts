@@ -1,21 +1,23 @@
-import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
+import {
+  ApolloServerPluginDrainHttpServer,
+  ApolloServerPluginLandingPageGraphQLPlayground
+} from 'apollo-server-core';
 import { ApolloServer } from 'apollo-server-express';
 import connectRedis from 'connect-redis';
 import cors from 'cors';
 import express from 'express';
 import session from 'express-session';
 import http from 'http';
-import Redis from "ioredis";
-import "reflect-metadata";
+import Redis from 'ioredis';
+import 'reflect-metadata';
 import { buildSchema } from 'type-graphql';
-import { createConnection } from "typeorm";
+import { createConnection } from 'typeorm';
 import { __prod__ } from './constants';
 import { Post } from './entities/Post';
 import ormConfig from './ormconfig';
 import { HelloResolve } from './resolvers/hello';
-import { PostResolve } from "./resolvers/post";
-import { UserResolve } from "./resolvers/user";
-
+import { PostResolve } from './resolvers/post';
+import { UserResolve } from './resolvers/user';
 
 const main = async () => {
   const connection = await createConnection(ormConfig);
@@ -27,14 +29,16 @@ const main = async () => {
 
   const httpServer = http.createServer(app);
 
-  const RedisStore = connectRedis(session)
+  const RedisStore = connectRedis(session);
   const redis = new Redis(process.env.REDIS_URL);
 
-  app.use(cors({
-    // origin: process.env.CORS_ORIGIN,
-    origin: true,
-    credentials: true
-  }));
+  app.use(
+    cors({
+      // origin: process.env.CORS_ORIGIN,
+      origin: true,
+      credentials: true
+    })
+  );
   app.use(
     session({
       name: 'qid',
@@ -71,7 +75,7 @@ const main = async () => {
       ApolloServerPluginLandingPageGraphQLPlayground()
     ],
     context: ({ req, res }) => {
-      return ({ req, res, redis })
+      return { req, res, redis };
     }
   });
 
@@ -84,10 +88,9 @@ const main = async () => {
     // },
   });
 
-  httpServer.listen({ port: 4000 }, () => {
+  httpServer.listen({ port: process.env.PORT || 4000 }, () => {
     console.log(`🚀 Server ready at http://localhost:4000${apolloServer.graphqlPath}`);
   });
-
-}
+};
 
 main().catch(err => console.error(err));

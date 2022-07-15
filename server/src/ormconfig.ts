@@ -5,7 +5,7 @@ const ormConfig: ConnectionOptions = {
   host: "localhost",
   port: 5432,
   username: "postgres",
-  password: "zx1328526673",
+  password: "YOUR_PASSWORD",
   database: "lireddit",
   synchronize: true,
   logging: true,

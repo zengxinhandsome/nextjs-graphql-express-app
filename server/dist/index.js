@@ -74,7 +74,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             (0, apollo_server_core_1.ApolloServerPluginLandingPageGraphQLPlayground)()
         ],
         context: ({ req, res }) => {
-            return ({ req, res, redis });
+            return { req, res, redis };
         }
     });
     yield apolloServer.start();
@@ -85,7 +85,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
         //   credentials: true,
         // },
     });
-    httpServer.listen({ port: 4000 }, () => {
+    httpServer.listen({ port: process.env.PORT || 4000 }, () => {
         console.log(`🚀 Server ready at http://localhost:4000${apolloServer.graphqlPath}`);
     });
 });
